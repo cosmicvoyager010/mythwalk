@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Myth Walk RPG</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0d0d1a;color:#fff;min-height:100vh;}
+#app{max-width:420px;margin:0 auto;min-height:100vh;}
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* TITLE */
+#titleScreen{background:linear-gradient(160deg,#1a0533,#0d1a33,#001a0d);align-items:center;justify-content:center;text-align:center;padding:30px;}
+.title-logo{font-size:64px;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+.title-main{font-size:26px;font-weight:bold;background:linear-gradient(90deg,#ffd700,#ff8c00,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:8px 0;}
+.title-sub{font-size:12px;color:#888;margin-bottom:20px;}
+.civ-parade{font-size:18px;margin:12px 0;line-height:2;}
+.start-btn{background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;padding:14px;border:none;border-radius:30px;font-size:17px;font-weight:bold;cursor:pointer;width:100%;margin-bottom:10px;}
+.test-btn{background:rgba(255,255,255,0.08);border:2px dashed #e74c3c;color:#e74c3c;padding:11px;border-radius:30px;font-size:13px;cursor:pointer;width:100%;}
+
+/* WORLD SELECT */
+#worldScreen{background:#0d0d1a;overflow-y:auto;}
+.ws-header{padding:12px 15px 5px;display:flex;align-items:center;gap:10px;}
+.back-btn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer;white-space:nowrap;}
+.ws-title{font-size:20px;font-weight:bold;color:#ffd700;}
+.ws-sub{font-size:11px;color:#555;margin-top:2px;}
+.ws-search{width:calc(100% - 30px);margin:8px 15px 5px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:10px 15px;border-radius:10px;font-size:14px;display:block;}
+.ws-filter{display:flex;gap:6px;flex-wrap:wrap;padding:5px 15px 8px;}
+.fbtn{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:#aaa;padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;}
+.fbtn.on{background:rgba(255,215,0,0.2);border-color:#ffd700;color:#ffd700;}
+.world-list{padding:0 15px 100px;}
+.wcard{border-radius:12px;padding:14px;cursor:pointer;border:2px solid transparent;transition:border-color 0.2s;position:relative;overflow:hidden;margin-bottom:10px;}
+.wcard.sel{border-color:#ffd700;}
+.wcard-bg{position:absolute;right:-5px;top:50%;transform:translateY(-50%);font-size:70px;opacity:0.1;pointer-events:none;}
+.wcard-row{display:flex;align-items:center;gap:12px;position:relative;}
+.wcard-icon{font-size:34px;min-width:40px;text-align:center;}
+.wcard-info{flex:1;min-width:0;}
+.wcard-name{font-size:15px;font-weight:bold;}
+.wcard-period{font-size:11px;opacity:0.55;margin:2px 0;}
+.wcard-desc{font-size:12px;color:#aaa;margin:2px 0;}
+.wcard-enemies{font-size:16px;margin-top:4px;}
+.wcard-special{font-size:11px;color:#ffd700;margin-top:2px;}
+.wcard-tag{position:absolute;top:6px;right:6px;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:bold;}
+.ws-confirm{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;padding:12px 15px;background:#0d0d1a;border-top:1px solid rgba(255,255,255,0.1);display:none;}
+.confirm-btn{background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;padding:14px;border:none;border-radius:12px;font-size:17px;font-weight:bold;cursor:pointer;width:100%;}
+
+/* GAME */
+#gameScreen{background:#0d0d1a;overflow-y:auto;padding-bottom:70px;}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(0,0,0,0.7);border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;z-index:10;}
+.topbar-left{display:flex;align-items:center;gap:8px;}
+.loc-name{font-size:12px;color:#ffd700;font-weight:bold;}
+.loc-world{font-size:11px;color:#555;}
+.tbbtns{display:flex;gap:4px;}
+.iBtn{background:none;border:none;font-size:20px;cursor:pointer;padding:3px;}
+.home-btn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:5px 9px;border-radius:20px;font-size:16px;cursor:pointer;}
+.mode-bar{text-align:center;padding:4px;font-size:11px;font-weight:bold;letter-spacing:1px;}
+.mode-bar.test{background:#922b21;}
+.mode-bar.real{background:#1e8449;}
+
+.world-banner{margin:8px 12px;border-radius:12px;padding:11px;display:flex;align-items:center;gap:10px;}
+.wb-icon{font-size:32px;min-width:36px;text-align:center;}
+.wb-info{flex:1;min-width:0;}
+.wb-name{font-size:13px;font-weight:bold;}
+.wb-period{font-size:11px;opacity:0.6;}
+.wb-special{font-size:11px;color:#ffd700;margin-top:2px;}
+
+.map-area{margin:0 12px 8px;background:linear-gradient(135deg,#0a1628,#1a0a28);border-radius:12px;height:120px;position:relative;overflow:hidden;border:1px solid rgba(255,215,0,0.2);}
+.map-bg-e{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:85px;opacity:0.07;pointer-events:none;}
+.map-player{position:absolute;font-size:24px;top:50%;transform:translateY(-50%);transition:left 1s;filter:drop-shadow(0 0 6px #ffd700);}
+.map-loc-label{position:absolute;top:7px;left:10px;background:rgba(0,0,0,0.7);padding:3px 10px;border-radius:20px;font-size:11px;color:#ffd700;}
+.map-prog-wrap{position:absolute;bottom:7px;left:10px;right:10px;}
+.map-prog-bar{background:rgba(0,0,0,0.5);border-radius:6px;height:7px;}
+.map-prog-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#ffd700,#ff8c00);transition:width 0.5s;}
+.map-prog-txt{font-size:10px;color:#888;margin-top:3px;text-align:center;}
+
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 12px 8px;}
+.scard{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:9px;}
+.scard-title{font-size:10px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.srow{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;}
+.sval{color:#ffd700;font-weight:bold;}
+
+.battle-zone{margin:0 12px 8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;text-align:center;min-height:145px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.enemy-emo{font-size:56px;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.06);}}
+.enemy-name{font-size:14px;font-weight:bold;color:#ff6b6b;margin:4px 0 3px;}
+.ehp-bar{width:100%;background:rgba(0,0,0,0.5);border-radius:6px;height:7px;margin:4px 0;}
+.ehp-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#e74c3c,#c0392b);transition:width 0.3s;}
+.boss-badge{background:#e74c3c;color:#fff;font-size:11px;font-weight:bold;padding:3px 10px;border-radius:10px;margin-bottom:5px;display:inline-block;}
+.idle-msg{font-size:13px;color:#444;margin-top:8px;}
+
+.msg-box{text-align:center;font-size:13px;color:#ffd700;font-weight:bold;min-height:22px;margin:0 12px 6px;}
+.actions{margin:0 12px 8px;display:flex;flex-direction:column;gap:7px;}
+.atk-btn{background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;padding:13px;border:none;border-radius:10px;font-size:18px;font-weight:bold;cursor:pointer;display:none;}
+.pot-btn{background:linear-gradient(135deg,#27ae60,#1e8449);color:#fff;padding:10px;border:none;border-radius:10px;font-size:14px;cursor:pointer;display:none;}
+.btn-row{display:flex;gap:7px;}
+.shop-btn{flex:1;background:rgba(255,165,0,0.1);border:1px solid rgba(255,165,0,0.3);color:#ffa500;padding:10px;border-radius:10px;font-size:13px;cursor:pointer;}
+.eq-btn{flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#888;padding:10px;border-radius:10px;font-size:13px;cursor:pointer;}
+.eq-btn.on{background:rgba(255,165,0,0.18);border-color:#ffa500;color:#ffa500;}
+
+.test-panel{margin:0 12px 10px;background:rgba(231,76,60,0.08);border:2px dashed #e74c3c;border-radius:10px;padding:11px;display:none;}
+.test-lbl{font-size:11px;color:#e74c3c;font-weight:bold;text-align:center;margin-bottom:7px;letter-spacing:1px;}
+.test-row{display:flex;gap:5px;margin-bottom:5px;}
+.tbtn{flex:1;background:rgba(231,76,60,0.15);border:1px solid #e74c3c;color:#fff;padding:7px 2px;border-radius:6px;font-size:11px;cursor:pointer;}
+.tbtn.grey{background:rgba(100,100,100,0.2);border-color:#555;color:#888;}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:rgba(10,10,20,0.97);border-top:1px solid rgba(255,255,255,0.1);display:flex;z-index:20;}
+.nav-btn{flex:1;padding:12px 5px 8px;background:none;border:none;color:#555;font-size:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color 0.2s;}
+.nav-btn .nav-ico{font-size:22px;}
+.nav-btn.active{color:#ffd700;}
+.nav-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:bold;padding:1px 5px;border-radius:10px;min-width:16px;text-align:center;}
+.nav-ico-wrap{position:relative;display:inline-block;}
+
+/* LIBRARY SCREEN */
+#libraryScreen{background:#0d0d1a;padding-bottom:70px;}
+.lib-header{padding:15px;background:rgba(0,0,0,0.5);border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;z-index:5;}
+.lib-title{font-size:20px;font-weight:bold;color:#ffd700;}
+.lib-sub{font-size:12px;color:#555;margin-top:3px;}
+.lib-filters{display:flex;gap:6px;flex-wrap:wrap;padding:10px 12px 5px;}
+.lib-filter-btn{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:#888;padding:5px 12px;border-radius:20px;font-size:11px;cursor:pointer;}
+.lib-filter-btn.on{color:#ffd700;border-color:#ffd700;background:rgba(255,215,0,0.12);}
+.lib-list{padding:10px 12px 20px;}
+.lib-card{background:rgba(255,255,255,0.04);border-radius:12px;padding:14px;margin-bottom:10px;border-left:4px solid #555;cursor:pointer;transition:background 0.2s;}
+.lib-card:active{background:rgba(255,255,255,0.07);}
+.lib-card.new{border-left-color:#3498db;}
+.lib-card.wrong{border-left-color:#e74c3c;}
+.lib-card.mystery{border-left-color:#9b59b6;}
+.lib-card.ongoing{border-left-color:#27ae60;}
+.lib-card-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.lib-card-icon{font-size:28px;}
+.lib-card-meta{flex:1;}
+.lib-card-type{font-size:10px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}
+.lib-card-type.new{color:#3498db;}
+.lib-card-type.wrong{color:#e74c3c;}
+.lib-card-type.mystery{color:#9b59b6;}
+.lib-card-type.ongoing{color:#27ae60;}
+.lib-card-world{font-size:11px;color:#555;}
+.lib-card-title{font-size:14px;font-weight:bold;margin-bottom:5px;}
+.lib-card-teaser{font-size:13px;color:#aaa;line-height:1.5;}
+.lib-card-unread{width:8px;height:8px;border-radius:50%;background:#ffd700;flex-shrink:0;}
+.lib-empty{text-align:center;padding:40px 20px;color:#444;}
+.lib-empty-ico{font-size:48px;margin-bottom:10px;}
+
+/* DISCOVERY TOAST (brief, while walking) */
+.disc-toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);width:calc(100% - 30px);max-width:380px;background:linear-gradient(135deg,#1a1a3e,#0d0d2a);border:1px solid rgba(255,215,0,0.4);border-radius:14px;padding:14px;z-index:2000;display:none;box-shadow:0 8px 30px rgba(0,0,0,0.6);}
+.disc-toast.show{display:block;animation:slideDown 0.4s ease;}
+@keyframes slideDown{from{top:40px;opacity:0;}to{top:70px;opacity:1;}}
+.disc-toast-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.disc-toast-ico{font-size:26px;}
+.disc-toast-label{font-size:10px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;}
+.disc-toast-title{font-size:14px;font-weight:bold;margin-bottom:5px;}
+.disc-toast-teaser{font-size:12px;color:#aaa;line-height:1.5;margin-bottom:10px;}
+.disc-toast-btns{display:flex;gap:8px;}
+.disc-read-later{flex:2;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);color:#ffd700;padding:8px;border-radius:8px;font-size:12px;font-weight:bold;cursor:pointer;}
+.disc-dismiss{flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:#888;padding:8px;border-radius:8px;font-size:12px;cursor:pointer;}
+
+/* DISCOVERY DETAIL MODAL */
+.detail-modal{position:fixed;inset:0;background:rgba(0,0,0,0.97);display:none;flex-direction:column;z-index:3000;overflow-y:auto;}
+.detail-modal.open{display:flex;}
+.detail-content{padding:20px;max-width:420px;margin:0 auto;width:100%;padding-bottom:40px;}
+.detail-back{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;cursor:pointer;margin-bottom:20px;display:inline-block;}
+.detail-type-badge{display:inline-block;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:12px;}
+.detail-type-badge.new{background:rgba(52,152,219,0.2);color:#3498db;border:1px solid #3498db;}
+.detail-type-badge.wrong{background:rgba(231,76,60,0.2);color:#e74c3c;border:1px solid #e74c3c;}
+.detail-type-badge.mystery{background:rgba(155,89,182,0.2);color:#9b59b6;border:1px solid #9b59b6;}
+.detail-type-badge.ongoing{background:rgba(39,174,96,0.2);color:#27ae60;border:1px solid #27ae60;}
+.detail-icon{font-size:56px;text-align:center;margin-bottom:12px;}
+.detail-title{font-size:22px;font-weight:bold;margin-bottom:8px;line-height:1.3;}
+.detail-world{font-size:12px;color:#555;margin-bottom:16px;}
+.detail-body{font-size:14px;line-height:1.8;color:#ccc;}
+.detail-body p{margin-bottom:12px;}
+.detail-body .highlight{background:rgba(255,215,0,0.1);border-left:3px solid #ffd700;padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:13px;color:#ffd700;}
+.detail-body .debate{background:rgba(155,89,182,0.1);border-left:3px solid #9b59b6;padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:13px;color:#c39bd3;}
+.detail-body .source{font-size:11px;color:#555;margin-top:8px;font-style:italic;}
+.detail-year{display:inline-block;background:rgba(255,165,0,0.15);color:#ffa500;padding:3px 10px;border-radius:10px;font-size:11px;margin-bottom:16px;}
+
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.95);display:none;justify-content:center;align-items:flex-start;z-index:1000;padding:15px;overflow-y:auto;}
+.modal.open{display:flex;}
+.mbox{background:#12121f;border-radius:16px;border:1px solid rgba(255,215,0,0.2);width:100%;max-width:390px;padding:18px;margin:auto;}
+.mtitle{font-size:18px;font-weight:bold;color:#ffd700;text-align:center;margin-bottom:12px;}
+.mitem{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.mitem.yes{border-color:rgba(46,204,113,0.4);background:rgba(46,204,113,0.06);}
+.mitem.frnd{border-color:rgba(155,89,182,0.4);background:rgba(155,89,182,0.06);}
+.mclose{background:#e74c3c;color:#fff;padding:11px;border:none;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;width:100%;margin-top:8px;}
+
+/* NOTIF */
+.notif{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;padding:9px 16px;border-radius:10px;font-weight:bold;font-size:13px;z-index:4000;text-align:center;max-width:300px;opacity:0;pointer-events:none;transition:opacity 0.3s;}
+.notif.show{opacity:1;}
+.sp-flash{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:1500;pointer-events:none;opacity:0;transition:opacity 0.3s;}
+.sp-flash.show{opacity:1;}
+.sp-box{background:linear-gradient(135deg,rgba(255,215,0,0.97),rgba(255,100,0,0.97));padding:16px 24px;border-radius:14px;text-align:center;font-size:15px;font-weight:bold;color:#000;max-width:270px;}
+.gps-bar{position:fixed;bottom:65px;left:50%;transform:translateX(-50%);width:calc(100% - 20px);max-width:400px;background:#1a1a2e;border:1px solid rgba(255,215,0,0.3);border-radius:14px;padding:13px;z-index:500;display:none;box-shadow:0 4px 20px rgba(0,0,0,0.5);}
+.gps-bar.show{display:block;}
+.gps-btns{display:flex;gap:7px;margin-top:9px;}
+.gps-accept{flex:2;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;padding:9px;border:none;border-radius:8px;font-size:12px;font-weight:bold;cursor:pointer;}
+.gps-other{flex:1;background:rgba(255,255,255,0.08);border:1px solid #444;color:#fff;padding:9px;border-radius:8px;font-size:12px;cursor:pointer;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- TITLE -->
+<div class="screen active" id="titleScreen">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;">
+    <div class="title-logo">🌍</div>
+    <div class="title-main">MYTH WALK RPG</div>
+    <div class="title-sub">18 Civilizations • Real Discoveries • Ancient Legends</div>
+    <div class="civ-parade">⛩️🏛️🦅🏰⚡𓂀🍀🐉<br>🦅☀️🌿🐘🌙☪️👑🌺🧙🏔️</div>
+    <button class="start-btn" id="realStartBtn">🌍 START ADVENTURE (GPS)</button>
+    <button class="test-btn" id="testStartBtn">🧪 TEST / DEV MODE</button>
+    <div style="margin-top:12px;font-size:11px;color:#333;text-align:center;">Walk the world. Discover real history.</div>
+  </div>
+</div>
+
+<!-- WORLD SELECT -->
+<div class="screen" id="worldScreen">
+  <div class="ws-header">
+    <button class="back-btn" id="wsBackBtn">← Back</button>
+    <div>
+      <div class="ws-title">⚔️ Choose World</div>
+      <div class="ws-sub">18 civilizations • Real discoveries included</div>
+    </div>
+  </div>
+  <input class="ws-search" id="wsSearch" placeholder="🔍 Search civilizations...">
+  <div class="ws-filter" id="wsFilter"></div>
+  <div class="world-list" id="worldList"></div>
+  <div class="ws-confirm" id="wsConfirm">
+    <button class="confirm-btn" id="confirmBtn">Enter This World ➤</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="screen" id="gameScreen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="home-btn" id="homeBtn">🏠</button>
+      <div>
+        <div class="loc-name" id="locName">📍 Ready</div>
+        <div class="loc-world" id="locWorld"></div>
+      </div>
+    </div>
+    <div class="tbbtns">
+      <button class="iBtn" id="sndBtn">🔊</button>
+      <button class="iBtn" id="worldBtn">🌍</button>
+    </div>
+  </div>
+  <div class="mode-bar" id="modeBar"></div>
+  <div class="world-banner" id="worldBanner">
+    <div class="wb-icon" id="wbIcon"></div>
+    <div class="wb-info">
+      <div class="wb-name" id="wbName"></div>
+      <div class="wb-period" id="wbPeriod"></div>
+      <div class="wb-special" id="wbSpecial"></div>
+    </div>
+    <div style="text-align:center;min-width:36px;">
+      <div id="wbBossEmo" style="font-size:20px;"></div>
+      <div style="font-size:9px;color:#e74c3c;">BOSS</div>
+    </div>
+  </div>
+  <div class="map-area">
+    <div class="map-bg-e" id="mapBg"></div>
+    <div class="map-player" id="mapPlayer" style="left:8%;"></div>
+    <div class="map-loc-label" id="mapLabel">Village</div>
+    <div class="map-prog-wrap">
+      <div class="map-prog-bar"><div class="map-prog-fill" id="progFill" style="width:0%"></div></div>
+      <div class="map-prog-txt" id="progTxt">0m / 500m</div>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="scard">
+      <div class="scard-title">⚔️ Hero</div>
+      <div class="srow"><span>⭐ Level</span><span class="sval" id="sLv">1</span></div>
+      <div class="srow"><span>❤️ HP</span><span class="sval" id="sHp">20/20</span></div>
+      <div class="srow"><span>✨ EXP</span><span class="sval" id="sExp">0/10</span></div>
+      <div class="srow"><span>💰 Gold</span><span class="sval" id="sGold">0</span></div>
+      <div class="srow"><span>⚔️ ATK</span><span class="sval" id="sAtk">5</span></div>
+    </div>
+    <div class="scard">
+      <div class="scard-title">📊 Journey</div>
+      <div class="srow"><span>👣 Steps</span><span class="sval" id="sSteps">0</span></div>
+      <div class="srow"><span>📏 Dist</span><span class="sval" id="sDist">0m</span></div>
+      <div class="srow"><span>😇 Angels</span><span class="sval" id="sAngels">0</span></div>
+      <div class="srow"><span>🗡️ Kills</span><span class="sval" id="sKills">0</span></div>
+      <div class="srow"><span>📚 Found</span><span class="sval" id="sDisc">0</span></div>
+    </div>
+  </div>
+  <div class="battle-zone" id="battleZone">
+    <div style="font-size:40px;opacity:0.3;">🌟</div>
+    <div class="idle-msg">Walk to trigger encounters!<br><span style="font-size:11px;color:#333;">Every 10 steps = battle</span></div>
+  </div>
+  <div class="msg-box" id="msgBox"></div>
+  <div class="actions">
+    <button class="atk-btn" id="atkBtn">⚔️ ATTACK</button>
+    <button class="pot-btn" id="potBtn">💊 USE POTION</button>
+    <div class="btn-row">
+      <button class="shop-btn" id="shopBtn">🏪 Shop</button>
+      <button class="eq-btn" id="swEq">🗡️ Sword</button>
+      <button class="eq-btn" id="shEq">🛡️ Shield</button>
+    </div>
+  </div>
+  <div class="test-panel" id="testPanel">
+    <div class="test-lbl">🧪 DEV / TEST MODE</div>
+    <div class="test-row">
+      <button class="tbtn" id="t1">+1 Step</button>
+      <button class="tbtn" id="t5">+5 Steps</button>
+      <button class="tbtn" id="t10">+10 Steps</button>
+      <button class="tbtn" id="t500">+500m</button>
+    </div>
+    <div class="test-row">
+      <button class="tbtn" id="tGold">+100 💰</button>
+      <button class="tbtn" id="tAngel">+5 😇</button>
+      <button class="tbtn" id="tDisc">🔍 Discover</button>
+      <button class="tbtn grey" id="tReset">🗑️ Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIBRARY SCREEN -->
+<div class="screen" id="libraryScreen">
+  <div class="lib-header">
+    <div class="lib-title">📚 Discovery Library</div>
+    <div class="lib-sub" id="libSub">Discoveries found during your journey</div>
+  </div>
+  <div class="lib-filters" id="libFilters"></div>
+  <div class="lib-list" id="libList"></div>
+</div>
+
+<!-- BOTTOM NAV (shown during game & library) -->
+<div class="bottom-nav" id="bottomNav" style="display:none;">
+  <button class="nav-btn active" id="navGame">
+    <span class="nav-ico">⚔️</span>
+    <span>Game</span>
+  </button>
+  <button class="nav-btn" id="navLib">
+    <span class="nav-ico-wrap">
+      <span class="nav-ico">📚</span>
+      <span class="nav-badge" id="libBadge" style="display:none;">0</span>
+    </span>
+    <span>Library</span>
+  </button>
+  <button class="nav-btn" id="navFriends">
+    <span class="nav-ico">👥</span>
+    <span>Friends</span>
+  </button>
+  <button class="nav-btn" id="navAchieve">
+    <span class="nav-ico">🏆</span>
+    <span>Awards</span>
+  </button>
+</div>
+
+<!-- DISCOVERY TOAST -->
+<div class="disc-toast" id="discToast">
+  <div class="disc-toast-top">
+    <div class="disc-toast-ico" id="toastIco"></div>
+    <div>
+      <div class="disc-toast-label" id="toastType"></div>
+      <div style="font-size:11px;color:#555;" id="toastWorld"></div>
+    </div>
+    <div style="margin-left:auto;font-size:10px;color:#555;">Saved to Library 📚</div>
+  </div>
+  <div class="disc-toast-title" id="toastTitle"></div>
+  <div class="disc-toast-teaser" id="toastTeaser"></div>
+  <div class="disc-toast-btns">
+    <button class="disc-read-later" id="toastReadBtn">📖 Read Now</button>
+    <button class="disc-dismiss" id="toastDismiss">Later ✓</button>
+  </div>
+</div>
+
+<!-- DISCOVERY DETAIL MODAL -->
+<div class="detail-modal" id="detailModal">
+  <div class="detail-content">
+    <button class="detail-back" id="detailBack">← Back</button>
+    <div class="detail-icon" id="detailIco"></div>
+    <div id="detailBadge"></div>
+    <div class="detail-year" id="detailYear"></div>
+    <div class="detail-title" id="detailTitle"></div>
+    <div class="detail-world" id="detailWorld"></div>
+    <div class="detail-body" id="detailBody"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="mbox">
+    <div class="mtitle" id="mTitle"></div>
+    <div id="mBody"></div>
+    <button class="mclose" id="mCloseBtn">✖ CLOSE</button>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+<div class="sp-flash" id="spFlash"><div class="sp-box" id="spBox"></div></div>
+
+<div class="gps-bar" id="gpsBar">
+  <div style="font-size:13px;color:#ffd700;font-weight:bold;" id="gpsSugTitle">📍 New Area!</div>
+  <div style="font-size:12px;color:#aaa;margin-top:3px;" id="gpsSugDesc"></div>
+  <div class="gps-btns">
+    <button class="gps-accept" id="gpsAccBtn">✅ Enter World</button>
+    <button class="gps-other" id="gpsChangeBtn">🔄 Change</button>
+    <button class="gps-other" id="gpsDismissBtn">✖</button>
+  </div>
+</div>
+
+<script>
+(function(){
+// ═══════════════════════════════════════════
+// DISCOVERIES DATABASE
+// ═══════════════════════════════════════════
+const DISCOVERIES = [
+  // ── JAPAN ──
+  {id:"j1",world:"japan",type:"wrong",icon:"⛩️",
+   title:"Samurai Didn't Just Use Swords",
+   teaser:"We picture samurai as sword-wielding warriors — but their primary weapon was actually the bow.",
+   year:"Ongoing research",
+   body:`<p>The iconic image of the samurai with a katana is mostly a later, romanticized invention. For most of Japanese history, <strong>samurai were primarily mounted archers</strong>. The word "samurai" itself is thought to derive from a verb meaning "to serve," not to fight.</p><div class="highlight">The bow (yumi) was the weapon of choice for centuries. Sword duels became prominent only in the later Edo period — largely as a form of ritual and philosophy rather than battlefield combat.</div><p>The katana itself didn't become the dominant symbol of samurai identity until the 16th–17th centuries, partly driven by the popularization of Zen philosophy which linked sword discipline to spiritual practice.</p><div class="debate">🔬 Still debated: Just how "peaceful" was the Edo period samurai class? Recent studies of skeletal remains suggest more interpersonal violence than official records show.</div><div class="source">Sources: Friday (2004), Turnbull (2000), ongoing bioarchaeology research.</div>`},
+
+  {id:"j2",world:"japan",type:"new",icon:"🏯",
+   title:"Ninja Were Mostly Farmers",
+   teaser:"New research reveals that the mysterious ninja were not a secret warrior class — most were ordinary farmers with specialized local knowledge.",
+   year:"Confirmed ~2010s",
+   body:`<p>Historians analyzing documents from the Iga and Kōka regions have found that <strong>ninja (shinobi) were largely part-time spies</strong>, often farmers or low-ranking samurai who used their local geography knowledge for intelligence work.</p><div class="highlight">The romantic image of black-clad assassins leaping across rooftops is almost entirely fictional, created by Edo period fiction writers and later popularized by cinema.</div><p>Real shinobi manuals (ninjutsu scrolls) like the <em>Bansenshukai</em> (1676) describe intelligence gathering, disguise, and psychological warfare — far more than flashy combat techniques.</p><div class="debate">🔬 Mystery remains: Several historical shinobi clans' lineages and techniques remain poorly documented. A museum in Iga (Japan) continues to collect and translate previously unknown manuscripts.</div><div class="source">Sources: Yamada Yuji, Iga-Ueno Ninja Museum research, 2010–present.</div>`},
+
+  {id:"j3",world:"japan",type:"mystery",icon:"🌸",
+   title:"The Real Origin of Genji Monogatari",
+   teaser:"The Tale of Genji is called the world's first novel — but scholars still debate who really wrote it and why.",
+   year:"Ongoing debate",
+   body:`<p><em>The Tale of Genji</em> (源氏物語), written around 1008 AD by Murasaki Shikibu, is celebrated as the world's first modern novel. But recent linguistic analysis has raised intriguing questions.</p><div class="highlight">A 2008 study using computational stylometry (analyzing writing patterns like a literary fingerprint) found subtle inconsistencies suggesting parts of the later chapters may have been written by a different hand — possibly a daughter or court collaborator.</div><p>Additionally, no original manuscript survives. The oldest copies date from centuries later, meaning we rely on copies of copies. Some chapters may have been added, removed, or altered over time.</p><div class="debate">🔬 Active debate: Was it written entirely by Murasaki? Was it partly dictated? Is it even possible to determine authorship for 1000-year-old Japanese texts? Researchers are currently applying AI-assisted analysis to surviving manuscripts.</div><div class="source">Sources: Fujii Sadakazu, National Institute of Japanese Literature, digital humanities projects 2015–present.</div>`},
+
+  // ── GREECE ──
+  {id:"g1",world:"greece",type:"wrong",icon:"🏛️",
+   title:"Ancient Greek Statues Were Painted in Bright Colors",
+   teaser:"Those beautiful white marble statues? They were actually painted in vivid, almost garish colors. We've been imagining ancient Greece completely wrong.",
+   year:"Confirmed — new analysis 2000s–2020s",
+   body:`<p>For centuries, Western civilization idealized ancient Greece through the lens of pristine white marble — a cornerstone of "classical" aesthetics. <strong>This was entirely wrong.</strong></p><div class="highlight">Using UV light, X-ray fluorescence, and infrared analysis, researchers have confirmed that virtually all ancient Greek (and Roman) statues and temples were painted in bright reds, blues, greens, and yellows. The Parthenon was not a serene white temple — it was explosively colorful.</div><p>The pigments simply faded over 2,000+ years, leaving the bleached stone we see today. The 18th-century scholars who formalized "neoclassical" aesthetics had no idea they were celebrating an accidentally stripped-down version of the originals.</p><div class="debate">🔬 Ongoing: The "Polychromy Project" continues to reconstruct the original colors of major ancient sculptures. Each new piece often surprises even expert expectations.</div><div class="source">Sources: Vinzenz Brinkmann (Polychromy Project), Nature journal reports 2008, 2017.</div>`},
+
+  {id:"g2",world:"greece",type:"new",icon:"⚙️",
+   title:"The Antikythera Mechanism — Older Than We Thought",
+   teaser:"A 2,000-year-old computer found in a shipwreck keeps revealing new secrets. Recent analysis suggests it's even more sophisticated than imagined.",
+   year:"New findings 2021",
+   body:`<p>The Antikythera Mechanism, discovered in a Greek shipwreck in 1901, is considered the world's first analog computer — built around 100–200 BC. It predicted astronomical events, eclipses, and even the Olympic Games calendar.</p><div class="highlight">In 2021, researchers at University College London created the first complete working model based on new X-ray tomography of the remaining fragments. They discovered it also modeled the motion of all five planets then known to the Greeks — far more sophisticated than previously assumed.</div><p>The device used differential gearing — a mechanism not thought to have been reinvented until the 16th century AD. Who built it and exactly where remains unknown.</p><div class="debate">🔬 Still unknown: Who made it? Was it a unique device or were similar machines mass-produced? A 2022 expedition returned to the Antikythera shipwreck site hoping to find more fragments.</div><div class="source">Sources: Freeth et al. (2021), UCL Antikythera Research Team, Scientific Reports.</div>`},
+
+  {id:"g3",world:"greece",type:"mystery",icon:"🌊",
+   title:"Was Atlantis Based on a Real Disaster?",
+   teaser:"Plato's Atlantis story has been dismissed as myth for centuries. New geological evidence suggests it may have been inspired by a real, catastrophic event.",
+   year:"Ongoing hypothesis",
+   body:`<p>Plato described Atlantis in 360 BC as a great civilization destroyed in a single day and night. For most of history, scholars treated this as pure allegory. But geologists have been finding something interesting.</p><div class="highlight">The Minoan civilization on the island of Thera (modern Santorini) was devastated around 1600 BC by one of the largest volcanic eruptions in human history. The island partly collapsed into the sea. The eruption likely triggered tsunamis that contributed to Minoan civilization's collapse.</div><p>Could Plato's tale be a heavily distorted folk memory, passed down 1,200 years? The timeline and geography don't perfectly match, but the structural similarities are striking.</p><div class="debate">🔬 Actively debated: Some geologists point instead to a possible sunken landmass near Gibraltar. Others argue Plato simply invented the story as a philosophical device. No consensus exists. New underwater archaeological surveys near Santorini continue.</div><div class="source">Sources: Galanopoulos & Bacon (1969), Marinatos excavations, ongoing Hellenic geological surveys.</div>`},
+
+  // ── ROME ──
+  {id:"r1",world:"rome",type:"wrong",icon:"🦅",
+   title:"Romans Didn't Vomit to Eat More at Banquets",
+   teaser:"The 'vomitorium' story is one of history's most persistent myths. These rooms had nothing to do with vomiting.",
+   year:"Long debunked, still misunderstood",
+   body:`<p>It's a popular belief that wealthy Romans used rooms called vomitoria to vomit mid-feast so they could continue eating. This is almost entirely false.</p><div class="highlight">Vomitoria (singular: vomitorium) were the entrance and exit passages in amphitheaters — named because they "spewed out" crowds quickly after shows. They had nothing to do with food or vomiting. The Romans did have a word for actual induced vomiting, but evidence for systematic feasting-and-purging is sparse and possibly limited to extreme excess by a small number of individuals.</div><p>The myth was likely amplified by early Christian writers exaggerating Roman decadence as moral argument, and then repeated uncritically through the centuries.</p><div class="debate">🔬 Still unclear: Some Roman writers (like Seneca) do reference vomiting after meals as a practice. But was this medically motivated (as ancient digestion theory suggested), or genuinely gluttonous? Scholars continue to debate the context.</div><div class="source">Sources: Roller (2006), various classical history reviews.</div>`},
+
+  {id:"r2",world:"rome",type:"new",icon:"🧬",
+   title:"DNA Reveals Ancient Rome Was More Diverse Than Imagined",
+   teaser:"Genomic analysis of skeletons from ancient Rome reveals it was one of the most genetically diverse cities in the ancient world.",
+   year:"Published 2019, ongoing",
+   body:`<p>A landmark 2019 study published in <em>Science</em> analyzed DNA from 127 individuals buried in Rome and surroundings across 12,000 years. The results were striking.</p><div class="highlight">During the height of the Roman Empire (1st–3rd century AD), the genetic profile of Romans was most similar to populations from the Eastern Mediterranean and Near East — not to earlier Italian or Western European populations. Rome was pulling in massive numbers of migrants, slaves, soldiers, and traders from across the empire.</div><p>The study also found a dramatic shift after the Western Empire's fall: the population became more similar to Northern and Central Europeans, reflecting the movement of Germanic peoples.</p><div class="debate">🔬 Ongoing: Which regions contributed most? How did social class correlate with origin? Researchers are now expanding the sample size to include more outlying Roman towns and provinces.</div><div class="source">Sources: Antonio et al. (2019), Science. Ongoing work at Harvard Ancient DNA Lab.</div>`},
+
+  // ── NORSE ──
+  {id:"n1",world:"norse",type:"wrong",icon:"⚡",
+   title:"Vikings Did NOT Have Horned Helmets",
+   teaser:"One of history's most iconic images is completely wrong. Not a single horned Viking helmet has ever been found from the Viking Age.",
+   year:"Known for decades — still misunderstood",
+   body:`<p>The horned Viking helmet is one of the most persistent false images in popular history. <strong>Not a single authentic Viking Age helmet with horns has ever been discovered.</strong></p><div class="highlight">The one famous horned helmet from Scandinavia — the Veksø Helmet — dates to around 900 BC, roughly 1,800 years before the Viking Age, and was likely ceremonial. Real Viking helmets were simple iron or leather caps, sometimes with a nose guard.</div><p>The myth exploded in the 19th century, spread by costume designer Carl Emil Doepler who created horned helmets for Wagner's opera cycle "Der Ring des Nibelungen" (1876). This image was so visually powerful it stuck.</p><div class="debate">🔬 Minor ongoing debate: Were horned helmets ever used symbolically, in ritual, or as chieftain insignia? Most historians say probably not in combat, but the ceremonial question remains open.</div><div class="source">Sources: Price (2020) "The Children of Ash and Elm," Museum of National Antiquities Stockholm.</div>`},
+
+  {id:"n2",world:"norse",type:"new",icon:"🧭",
+   title:"Vikings Used a 'Solar Stone' Crystal to Navigate",
+   teaser:"Legends described a magical 'sunstone' Vikings used to find direction even in fog and clouds. In 2013, scientists found one — and proved it works.",
+   year:"Confirmed 2013, extended 2021",
+   body:`<p>Old Norse sagas mention a <em>sólarsteinn</em> (sunstone) that could reveal the sun's position even in overcast conditions. For a long time, historians assumed this was poetic myth.</p><div class="highlight">In 2013, a crystal found in a 16th-century English shipwreck was identified as Icelandic spar (calcite). Experiments proved it functions as a precise solar polarizing filter — by looking through it and rotating it, navigators can pinpoint the sun's direction to within a few degrees even in heavy cloud cover or twilight.</div><p>A 2021 computer simulation showed that using such stones could have achieved navigation accuracy within 4 degrees latitude — precise enough for Atlantic crossings.</p><div class="debate">🔬 Still open: No sunstone has been found in a confirmed Viking archaeological context yet. Were they widely used, or only by elite navigators? The simulations are compelling, but direct archaeological evidence remains elusive.</div><div class="source">Sources: Ropars et al. (2013), Proceedings of the Royal Society A; Bernáth et al. (2021).</div>`},
+
+  // ── EGYPT ──
+  {id:"e1",world:"egypt",type:"wrong",icon:"𓂀",
+   title:"Pyramids Were NOT Built by Slaves",
+   teaser:"The ancient Greek historian Herodotus claimed slaves built the pyramids. DNA, skeletal, and archaeological evidence now shows the builders were paid skilled workers.",
+   year:"Confirmed — evidence accumulated 1990s–2020s",
+   body:`<p>The idea that Egyptian pyramids were built by enslaved Israelites (or slaves in general) has persisted for millennia, largely due to Herodotus and later Biblical interpretations. Modern archaeology has dismantled this completely.</p><div class="highlight">Excavations near Giza since the 1990s by Zahi Hawass and Mark Lehner uncovered a workers' village with bakeries, breweries, medical facilities, and cemeteries. The skeletons show signs of hard labor but also <strong>healed fractures and primitive surgical care</strong> — evidence these were valued workers, not slaves who would have been left to die.</div><p>Documents show workers were organized into named teams, received rations of bread and beer, and were given rotating shifts with time off. Graffiti found on pyramid blocks even contains team names like "Friends of Khufu."</p><div class="debate">🔬 Still researched: The precise scale of the workforce, how it was organized logistically, and how stones were transported remain active archaeological questions. New 3D mapping projects continue to reveal tunnels and chambers.</div><div class="source">Sources: Lehner (1997), Hawass excavations, AERA (Ancient Egypt Research Associates).</div>`},
+
+  {id:"e2",world:"egypt",type:"new",icon:"🌊",
+   title:"A Lost Nile Branch May Explain How Pyramids Were Built",
+   teaser:"A 2024 study discovered a long-lost ancient branch of the Nile that once flowed right past the pyramids — solving a 140-year-old mystery.",
+   year:"Published 2024",
+   body:`<p>One of Egyptology's great puzzles: how did ancient Egyptians transport enormous stone blocks across desert to pyramid sites? The quarries were miles away.</p><div class="highlight">A study published in <em>Communications Earth & Environment</em> (2024) used radar satellite imagery and sediment core drilling to reveal a previously unknown 64km branch of the Nile — called the Ahramat Branch — that once flowed along the edge of the pyramid fields. It was navigable during ancient times and then silted up and disappeared.</div><p>This branch would have allowed boats to carry stones directly to construction sites that are now deep desert. It explains why so many pyramid complexes are aligned along the same strip of land.</p><div class="debate">🔬 Very recent: Researchers are still mapping the full extent of the branch and its active period. Whether smaller pyramid complexes also used it is under investigation. This finding may reshape how dozens of sites are understood.</div><div class="source">Sources: Eman Ghoneim et al. (2024), Communications Earth & Environment, Nature portfolio.</div>`},
+
+  // ── ARTHUR ──
+  {id:"a1",world:"arthur",type:"mystery",icon:"🏰",
+   title:"Was King Arthur Real?",
+   teaser:"No contemporary historical record mentions King Arthur. Yet archaeologists keep finding sites that match. The mystery deepens every decade.",
+   year:"Ongoing — no consensus",
+   body:`<p>King Arthur is one of history's most compelling mysteries. No document written during the supposed 5th–6th century Arthurian period explicitly names him. The earliest references come centuries later.</p><div class="highlight">Yet archaeology keeps finding tantalizing hints. Tintagel Castle in Cornwall, long associated with Arthur, yielded a 6th-century inscribed stone in 1998 bearing the name "Artognou" — not Arthur, but close enough to reignite debate. The site shows it was indeed a high-status British settlement of exactly the right period.</div><p>South Cadbury hillfort in Somerset has long been linked with "Camelot." Excavations show it was massively refortified in the late 5th century — exactly when a powerful British warlord would have needed a stronghold against Saxon invasion.</p><div class="debate">🔬 Active debate: Was Arthur a real military leader whose deeds were mythologized? A composite of several historical figures? Or entirely invented by 12th-century writers like Geoffrey of Monmouth for political purposes? No consensus. New DNA analysis of 5th-century British burials is ongoing and may clarify migration patterns of the period.</div><div class="source">Sources: Padel (2000), Higham (2002), Tintagel excavations by English Heritage.</div>`},
+
+  // ── AZTEC ──
+  {id:"az1",world:"aztec",type:"wrong",icon:"🦅",
+   title:"Aztec Sacrifice Was Not Just About Death",
+   teaser:"Human sacrifice is the most remembered aspect of Aztec religion. But new research reveals a far more complex ritual economy that served social and even ecological functions.",
+   year:"Reframed — 2010s research",
+   body:`<p>Human sacrifice in Aztec society has long been presented as simple barbarism. While the practice was real and large-scale, its cultural function was far more complex than Western accounts suggest.</p><div class="highlight">Recent work by archaeologists like Ximena Chávez Balderas at Templo Mayor has analyzed thousands of remains. The sacrifices were embedded in a deeply structured cosmological system in which humans "fed" the sun to keep it moving — a terrifying theology, but one with internal logical coherence.</div><p>Additionally, recent isotope analysis shows many sacrifice victims were from distant regions, meaning the practice was also tied to warfare, political dominance, and the display of imperial power across Mesoamerica.</p><div class="debate">🔬 Ongoing revision: Were sacrifice numbers exaggerated by Spanish colonial writers who had political reasons to demonize Aztec culture? Some estimates from Spanish accounts (tens of thousands at single events) are now considered highly implausible by archaeologists. The actual scale is still actively debated.</div><div class="source">Sources: Chávez Balderas (2010), Schwartz (2017), Templo Mayor archaeological reports.</div>`},
+
+  {id:"az2",world:"aztec",type:"new",icon:"📜",
+   title:"The Aztec 'Skull Tower' Was Even Bigger Than Reported",
+   teaser:"Spanish conquistadors described a massive tower of human skulls in Tenochtitlan. Archaeologists dismissed this as exaggeration — until they found it in 2015.",
+   year:"Discovered 2015, ongoing excavation",
+   body:`<p>Spanish chronicles described a <em>tzompantli</em> — a skull rack — in the center of Tenochtitlan (modern Mexico City) so large it was said to contain thousands of skulls. For centuries, many historians assumed this was colonial propaganda.</p><div class="highlight">In 2015, construction workers near Mexico City's Metropolitan Cathedral unearthed the actual structure. By 2020, archaeologists had uncovered a cylindrical tower built entirely of cemented skulls — estimated to contain over 650 skulls so far, with the excavation ongoing. It is larger than the Spanish accounts described, not smaller.</div><p>Forensic analysis showed skulls belonging to men, women, and children — contradicting the assumption that only male war captives were used.</p><div class="debate">🔬 Still excavating (as of 2024): The full size of the tower is unknown. Researchers are analyzing DNA to understand where victims came from and how the structure was built over time.</div><div class="source">Sources: INAH (Mexican National Anthropology Institute) reports 2015–2024, Science journal coverage.</div>`},
+
+  // ── MAYA ──
+  {id:"m1",world:"maya",type:"new",icon:"🌿",
+   title:"LiDAR Revealed an Entire Hidden Maya Civilization",
+   teaser:"In 2018, a single aerial survey using laser technology revealed more Maya structures in Guatemala than had been discovered in the previous 150 years combined.",
+   year:"Published 2018, ongoing",
+   body:`<p>For over a century, archaeologists hacked through dense jungle to find Maya ruins one by one. Then LiDAR (Light Detection and Ranging) technology changed everything overnight.</p><div class="highlight">In 2018, the PACUNAM LiDAR Initiative published results from a survey over 2,100 square kilometers of northern Guatemala. They found over 60,000 previously unknown structures — including hidden pyramids, elevated highways, fortifications, and irrigation networks. This revealed that the Classic Maya population was 3–4 times larger than previously estimated: possibly 7–11 million people.</div><p>Most strikingly, the survey revealed an interconnected urban landscape suggesting that the Maya lowlands functioned as a single, densely populated civilization rather than scattered city-states.</p><div class="debate">🔬 Revolution ongoing: This single technology has so fundamentally changed Maya archaeology that researchers describe it as "starting over." New LiDAR surveys in Belize, Mexico, and Honduras continue to reveal new cities every year.</div><div class="source">Sources: Marcello Canuto et al. (2018), Science; PACUNAM LiDAR Initiative ongoing reports.</div>`},
+
+  {id:"m2",world:"maya",type:"mystery",icon:"🔭",
+   title:"Maya Astronomical Knowledge — How Was It So Precise?",
+   teaser:"The Maya tracked Venus cycles to within 2 hours of precision over 500 years — without telescopes. How they achieved this accuracy remains a genuine mystery.",
+   year:"Ongoing research",
+   body:`<p>The ancient Maya developed one of the most sophisticated astronomical systems in the world. Their Venus calendar tracked the planet's 584-day cycle with remarkable accuracy — an error of just 2 hours over 500 years.</p><div class="highlight">They achieved this using only naked-eye observation, aligned architecture (buildings oriented to catch specific astronomical events), and meticulous record-keeping across generations. The Dresden Codex, one of only four surviving Maya books, contains eclipse prediction tables still used to verify their accuracy today.</div><p>But how they first established such precision — especially across long time periods requiring multi-generational consistent observation — is not fully understood. Some alignments in structures like El Caracol at Chichen Itza suggest buildings were deliberately designed as precision instruments.</p><div class="debate">🔬 Active question: Did Maya astronomy develop independently or was knowledge transferred from other Mesoamerican cultures? Recent comparison of Aztec and Maya astronomical records suggests significant exchange — but the origin point is unknown.</div><div class="source">Sources: Milbrath (1999), Lounsbury astronomical analysis, ongoing Mesoamerican archaeoastronomy research.</div>`},
+
+  // ── INDIA ──
+  {id:"i1",world:"india",type:"new",icon:"🐘",
+   title:"The Indus Valley Civilization Was Larger Than Egypt and Mesopotamia Combined",
+   teaser:"At its peak, the Indus Valley Civilization covered a larger area than any other ancient civilization — yet we still cannot read their writing.",
+   year:"Ongoing reassessment",
+   body:`<p>The Indus Valley Civilization (also called the Harappan Civilization), which flourished 2600–1900 BC, has been chronically underrepresented in popular history compared to Egypt and Mesopotamia.</p><div class="highlight">Recent archaeological surveys show it covered over 1 million square kilometers — larger than ancient Egypt and Mesopotamia combined. Cities like Mohenjo-daro had sophisticated grid layouts, underground sewage systems, and standardized weights that suggest complex governance — yet there is no evidence of palaces, massive temples, or royal burials. No clear ruling class.</div><p>This has led to the "egalitarian civilization" hypothesis: that the Indus Valley may have functioned through some form of distributed governance — unique in the ancient world.</p><div class="debate">🔬 Biggest unsolved mystery: The Indus script remains undeciphered. Over 400 symbols have been identified, but no bilingual text (like a Rosetta Stone) has been found. Multiple competing decipherment attempts exist. Cracking it would transform our understanding of ancient South Asia.</div><div class="source">Sources: Kenoyer (1998), McIntosh (2008), ongoing excavations at Rakhigarhi.</div>`},
+
+  // ── MESOPOTAMIA ──
+  {id:"ms1",world:"mesopotamia",type:"wrong",icon:"🌙",
+   title:"The Tower of Babel Was Real — But Not What the Bible Describes",
+   teaser:"A 2011 discovery of a stone tablet appears to show an actual blueprint of the ziggurat that inspired the Tower of Babel story.",
+   year:"Tablet analyzed 2011, reported 2017",
+   body:`<p>The Tower of Babel has long been considered a theological story. But a 2,500-year-old Babylonian clay tablet analyzed by scholars in 2011 appears to show a detailed floor plan and description of a massive ziggurat.</p><div class="highlight">The tablet shows a seven-story tower with precise measurements, labeled "The Tower of Babel" in cuneiform, and includes an image of King Nebuchadnezzar II standing before it. This is the first contemporary Babylonian documentation of the tower's existence and form. The structure described matches the great ziggurat of Babylon (Etemenanki) — a real structure whose foundations have been identified by archaeologists.</div><p>The structure was likely 91 meters tall when complete — towering over everything in the ancient world. It was under construction for centuries, repeatedly interrupted, abandoned, and restarted — perhaps inspiring stories of confused builders.</p><div class="debate">🔬 Debated: Is this the specific structure behind the biblical story? The Bible's account differs significantly, and scholars disagree on the relationship. The tablet itself has been in a private collection, limiting peer analysis.</div><div class="source">Sources: Andrew George analysis (2011), Schøyen Collection, reported in Biblical Archaeology Review 2017.</div>`},
+
+  // ── POLYNESIA ──
+  {id:"p1",world:"polynesia",type:"new",icon:"🌺",
+   title:"Polynesians Reached South America 800 Years Ago",
+   teaser:"Ancient DNA has confirmed that Polynesians and Native Americans made contact around 1200 AD — long before European contact. The direction of travel surprised everyone.",
+   year:"Confirmed by DNA 2020",
+   body:`<p>For decades, the question of pre-Columbian contact between Polynesia and the Americas was hotly debated. The sweet potato (a South American crop) had spread across the Pacific centuries before Europeans arrived — but how?</p><div class="highlight">A landmark 2020 study in <em>Nature</em> analyzed ancient and modern DNA from 807 individuals across Polynesia and the Americas. The results confirmed gene flow between Polynesian and South American Native populations around 1200 AD — approximately centered on the Marquesas Islands.</div><p>Interestingly, the DNA evidence suggests the contact was not a one-time event, and the flow of genes indicates <strong>South Americans traveled to Polynesia</strong>, not only the reverse — or the encounter happened on an intermediate island.</p><div class="debate">🔬 Ongoing: Exactly where first contact occurred, how many voyages were involved, and whether Polynesians visited South America or vice versa (or both) is still being studied. Thor Heyerdahl's famous Kon-Tiki theory (American-to-Polynesia direction) now has partial genetic support, but the full picture is complex.</div><div class="source">Sources: Ioannidis et al. (2020), Nature. University of Stanford genomics lab.</div>`},
+
+  // ── CELTIC ──
+  {id:"c1",world:"celtic",type:"wrong",icon:"🍀",
+   title:"Celts Were Not a Unified People",
+   teaser:"We talk about 'the Celts' as a single group — but modern genetics and archaeology suggest this is a modern invention. There may never have been a unified Celtic identity.",
+   year:"Ongoing academic debate, peaked 2000s–2010s",
+   body:`<p>The term "Celtic" typically evokes a unified ancient culture spreading from Ireland to Galatia in Turkey. This framing is now under serious challenge.</p><div class="highlight">A major 2003 paper by archaeologist John Collis argued that "the Celts" as a cultural identity was largely a 16th-century invention, applied retroactively to Iron Age peoples who never called themselves Celtic. The ancient Greeks used the word "Keltoi" to describe various northern barbarian groups, not a self-identified nation.</div><p>DNA studies of modern so-called "Celtic" populations (Irish, Welsh, Breton, Scottish) show they are not a genetically unified group. The Welsh and Irish, for example, are more closely related to ancient Iberian populations than to each other in some analyses.</p><div class="debate">🔬 Still debated: Some archaeologists argue there was a real shared material culture (La Tène style art, language family) that justifies the "Celtic" label. Others say the linguistic connection (Celtic languages) is real but shouldn't be conflated with ethnic or cultural unity. No consensus. This is one of archaeology's liveliest ongoing debates.</div><div class="source">Sources: Collis (2003), Cunliffe (2018) "The Ancient Celts," Oppenheimer (2006).</div>`},
+
+  // ── CHINA ──
+  {id:"ch1",world:"china",type:"new",icon:"🐉",
+   title:"China's Terracotta Army Was Inspired by Greek Sculpture",
+   teaser:"The Terracotta Warriors, long considered a purely Chinese achievement, may have been inspired by contact with ancient Greek sculptors — 1,500 years before official contact.",
+   year:"Proposed 2016, ongoing debate",
+   body:`<p>The Terracotta Army of Emperor Qin Shi Huang (created ~210 BC) has always been celebrated as a uniquely Chinese artistic achievement. A 2016 study added a twist.</p><div class="highlight">Archaeologist Lukas Nickel (University of Vienna) noticed that life-size human sculptures suddenly appeared in China at precisely the time of the Terracotta Army — with no clear domestic precedent. He proposed this was inspired by exposure to Greek sculpture, possibly through Silk Road precursor contacts or Alexander the Great's campaigns, which reached nearby Central Asia.</div><p>Separately, DNA analysis of skeletons from a site near the mausoleum suggested the presence of individuals with Western Eurasian ancestry — possibly Greek or Persian craftsmen.</p><div class="debate">🔬 Highly contested: Many Chinese archaeologists strongly dispute the theory, pointing to earlier small-scale Chinese figurines as precedents. The DNA evidence is from a site near but not confirmed to be related to the terracotta workers. This debate is ongoing and sometimes politically sensitive.</div><div class="source">Sources: Nickel (2016), University of Vienna; critical responses in Journal of Chinese Studies.</div>`},
+
+  // ── MALI ──
+  {id:"ml1",world:"mali",type:"wrong",icon:"👑",
+   title:"Mansa Musa Was Probably the Richest Human Who Ever Lived",
+   teaser:"His 1324 pilgrimage to Mecca was so extravagant it caused inflation across North Africa and the Middle East for a decade. Yet Western history textbooks barely mention him.",
+   year:"Reassessment ongoing",
+   body:`<p>Mansa Musa, emperor of the Mali Empire (ruled ~1312–1337), controlled more than half the world's gold supply at his peak. When he made his famous hajj to Mecca in 1324, he brought 60,000 men and 12,000 slaves, each carrying bars of gold.</p><div class="highlight">He gave away so much gold in Cairo and across his route that he caused severe <strong>monetary inflation across North Africa and the Arabian Peninsula for over a decade</strong>. Contemporary Arab historians recorded the gold market didn't recover for 10–12 years. Some economists estimate his wealth equivalent at $400 billion USD — making him, in adjusted terms, the wealthiest individual in recorded history.</div><p>His pilgrimage also put Mali on European maps for the first time — the 1375 Catalan Atlas shows him explicitly, seated on a throne, holding a golden orb.</p><div class="debate">🔬 Methodological debate: Comparing historical wealth to modern equivalents is notoriously tricky. The $400 billion figure is contested. But that his hajj caused measurable economic disruption is historically documented and not in serious dispute.</div><div class="source">Sources: Hunwick (1999), Niane (1965), Catalan Atlas historical analysis.</div>`},
+
+  // ── PERSIA ──
+  {id:"pr1",world:"persia",type:"wrong",icon:"🌟",
+   title:"The Persian Empire Was Unusually Tolerant for Its Time",
+   teaser:"Persia is often cast as the villain in Greek narratives. But Persian royal records reveal an empire of remarkable religious tolerance and administrative sophistication.",
+   year:"Ongoing historical revision",
+   body:`<p>Western history largely views ancient Persia through the Greek lens — the villain of Marathon, Thermopylae, and Salamis. Persian royal records tell a very different story.</p><div class="highlight">The Cyrus Cylinder (539 BC), discovered in 1879 and now in the British Museum, records Cyrus the Great's policy of allowing conquered peoples to practice their own religions and return to their homelands. He explicitly freed the Jews from Babylonian captivity — referenced in the Hebrew Bible. Some scholars call it the world's first declaration of religious freedom.</div><p>The Persepolis Fortification Tablets — administrative records from Darius I's court — show rations paid to workers including women, Greeks, Babylonians, and Egyptians, all working together with documented equal pay for equal work in some categories.</p><div class="debate">🔬 Ongoing revision: How much of the "tolerant Persian" narrative is Persian self-promotion versus historical reality? Some historians argue the Cyrus Cylinder is propaganda. The tablets show a sophisticated but also controlling bureaucracy. Balanced reassessment is ongoing.</div><div class="source">Sources: Brosius (2006), Waters (2014), British Museum Cyrus Cylinder documentation.</div>`},
+
+  // ── ARABIAN NIGHTS ──
+  {id:"ar1",world:"arabian",type:"new",icon:"☪️",
+   title:"The Original 1001 Nights Texts Keep Being Found",
+   teaser:"The 'original' Arabian Nights doesn't exist. New manuscript discoveries keep rewriting what we thought the collection actually contained.",
+   year:"Ongoing manuscript discoveries",
+   body:`<p>The <em>One Thousand and One Nights</em> is treated as a fixed classic, but it is more like a living organism — a collection that grew, changed, and was added to across centuries and cultures from India to Persia to Arabia to Egypt.</p><div class="highlight">There is no single "original" manuscript. The earliest known Arabic fragment dates to 9th-century Iraq and contains only a handful of stories. Most of the famous tales — including Sinbad, Ali Baba, and Aladdin — were <strong>not in the original Arabic manuscripts</strong> at all. They were added by French translator Antoine Galland in 1704–1717, some from oral stories told to him by a Syrian Christian narrator.</div><p>New manuscript discoveries continue: a 2010 discovery in the Bibliotheque Nationale in Paris identified 18th-century Arabic manuscripts containing stories not present in any known edition, suggesting the collection was still actively growing and changing as late as the 1700s.</p><div class="debate">🔬 Ongoing: Scholars continue to trace individual story origins across Sanskrit, Persian, Greek, and Arabic traditions. Digital humanities projects are now mapping the transmission of specific story elements across hundreds of manuscript versions.</div><div class="source">Sources: Marzolph & van Leeuwen (2004), Irwin (1994), ongoing digital manuscript projects.</div>`},
+
+  // ── SLAVIC ──
+  {id:"sl1",world:"slavic",type:"mystery",icon:"❄️",
+   title:"Pre-Christian Slavic Religion Remains Largely Unknown",
+   teaser:"Unlike Greek or Norse mythology, Slavic paganism was so thoroughly destroyed by Christian conversion that reconstructing it requires detective work — and may never be complete.",
+   year:"Ongoing reconstruction",
+   body:`<p>Norse mythology has the Eddas. Greek mythology has Homer, Hesiod, and hundreds of other sources. Slavic paganism, practiced by over 300 million people's ancestors, was so thoroughly eradicated after forced Christianization (9th–12th centuries) that almost no primary written sources survive.</p><div class="highlight">What we know comes from: hostile Christian chronicles that mention pagan practices they were suppressing; archaeology of ritual sites; folklore and folk customs that preserve fragments of older beliefs; and comparison with Baltic pagan traditions (which survived slightly longer).</div><p>Major deities like Perun (thunder god), Veles (underworld), and Mokosh (earth goddess) are attested in multiple sources. But their myths, relationships, and the full shape of the cosmology is almost entirely reconstructed or speculative.</p><div class="debate">🔬 Fundamental problem: How much of "Slavic mythology" in popular books is genuine ancient tradition versus 19th-century Romantic-era invention? Many scholars think reconstruction efforts have gone too far beyond the evidence. This is an active and sometimes bitter academic debate.</div><div class="source">Sources: Jakobson (1985), Barford (2001), Rock (2007), ongoing Slavic folklore studies.</div>`}
+];
+
+// ═══════════════════════════════════════════
+// WORLDS DATA (condensed)
+// ═══════════════════════════════════════════
+const WORLDS=[
+  {id:"japan",name:"⛩️ Feudal Japan",period:"794–1868 AD",region:"Asia",desc:"Samurai, Yokai spirits and ancient shrines",bg:"⛩️",hero:"🥷",color:"#c0392b",
+   enemies:["👺 Oni Demon","🥷 Shadow Ninja","⚔️ Ronin Samurai","🦊 Kitsune Fox","🐍 Yamata Serpent"],
+   boss:{name:"🐉 Ryū Dragon",hp:80},special:{name:"Bushido Spirit",desc:"20% chance to strike twice!",trigger:"double"},
+   locations:["Edo Village","Kami Shrine","Bamboo Grove","Osaka Castle","Dragon Peak"],areaTypes:["city","historical","forest","mountain","water"]},
+  {id:"greece",name:"🏛️ Ancient Greece",period:"800–146 BC",region:"Europe",desc:"Gods, heroes and monsters of Olympus",bg:"🏛️",hero:"🛡️",color:"#2980b9",
+   enemies:["🐂 Minotaur","🐍 Medusa","🌊 Poseidon Guard","👁️ Cyclops","🦅 Harpy"],
+   boss:{name:"🐲 Hydra",hp:90},special:{name:"Olympian Blessing",desc:"Zeus heals +5 HP each battle!",trigger:"heal"},
+   locations:["Athens Agora","Temple of Zeus","Mount Olympus","The Labyrinth","Gates of Troy"],areaTypes:["city","historical","mountain","water","forest"]},
+  {id:"rome",name:"🦅 Ancient Rome",period:"753 BC–476 AD",region:"Europe",desc:"Legions, gladiators and the eternal city",bg:"🦅",hero:"⚔️",color:"#8e44ad",
+   enemies:["🗡️ Gladiator","🐺 Barbarian","🏹 Celtic Archer","🦁 Arena Lion","💀 Undead Soldier"],
+   boss:{name:"👹 Pluto's Champion",hp:85},special:{name:"Testudo Formation",desc:"Shield blocks 50% damage!",trigger:"shield_bonus"},
+   locations:["Roman Forum","The Colosseum","Rhine Border","Carthage Ruins","Senate Hill"],areaTypes:["city","historical","forest","mountain","water"]},
+  {id:"arthur",name:"🏰 King Arthur",period:"5th–6th Century",region:"Europe",desc:"Knights, Excalibur and the Holy Grail",bg:"🏰",hero:"🤴",color:"#27ae60",
+   enemies:["🧙 Dark Wizard","👹 Forest Troll","⚔️ Black Knight","🦇 Vampire Lord","🐍 Morgan's Serpent"],
+   boss:{name:"🐉 Morgan's Dragon",hp:100},special:{name:"Excalibur's Light",desc:"First hit each battle deals double damage!",trigger:"first_double"},
+   locations:["Camelot Castle","Merlin's Tower","Enchanted Forest","Lake Avalon","Grail Temple"],areaTypes:["city","forest","water","historical","mountain"]},
+  {id:"norse",name:"⚡ Norse Vikings",period:"793–1066 AD",region:"Europe",desc:"Odin, Thor, and Ragnarok await",bg:"⚡",hero:"🪖",color:"#2c3e50",
+   enemies:["🐺 Fenrir Wolf","🐍 Jörmungandr","💀 Draugr","🔥 Fire Giant","🧊 Frost Troll"],
+   boss:{name:"💀 Hel",hp:95},special:{name:"Berserker Rage",desc:"Below 30% HP: attack x3!",trigger:"berserker"},
+   locations:["Midgard Village","Valhalla Gates","Jotunheim Ice","Yggdrasil Tree","Bifrost Bridge"],areaTypes:["city","mountain","water","forest","historical"]},
+  {id:"egypt",name:"𓂀 Ancient Egypt",period:"3100–30 BC",region:"Africa",desc:"Pharaohs, pyramids and the gods of the Nile",bg:"𓂀",hero:"🧿",color:"#e67e22",
+   enemies:["🐊 Sobek Crocodile","🦂 Desert Scorpion","💀 Mummy","🐍 Ra's Serpent","👁️ Anubis Guard"],
+   boss:{name:"👁️ Set",hp:90},special:{name:"Pharaoh's Curse",desc:"Each attack adds +2 poison damage!",trigger:"poison"},
+   locations:["Cairo Market","Great Pyramid","Nile Delta","Valley of Kings","Temple of Ra"],areaTypes:["city","historical","water","mountain","forest"]},
+  {id:"celtic",name:"🍀 Celtic Myths",period:"500 BC–400 AD",region:"Europe",desc:"Druids, fairy folk and sacred forests",bg:"🍀",hero:"🧝",color:"#16a085",
+   enemies:["🧚 Dark Fairy","🐗 Wild Boar","👻 Banshee","🧙 Dark Druid","🐉 Celtic Dragon"],
+   boss:{name:"🧙 Cernunnos",hp:85},special:{name:"Nature's Regen",desc:"Recover 3 HP after each battle!",trigger:"regen"},
+   locations:["Druid Stone Circle","Fairy Mound","Sacred Oak Grove","Hill Fort","Tara Temple"],areaTypes:["forest","historical","city","mountain","water"]},
+  {id:"china",name:"🐉 Ancient China",period:"221 BC–618 AD",region:"Asia",desc:"Emperors, dragons and the Silk Road",bg:"🐉",hero:"🥋",color:"#e74c3c",
+   enemies:["🐉 Long Dragon","🐯 White Tiger","🦊 Nine-tail Fox","⚔️ Terracotta Warrior","🌀 Wind Demon"],
+   boss:{name:"🐉 Emperor Dragon",hp:100},special:{name:"Jade Technique",desc:"Every 5th kill drops +20 gold Jade!",trigger:"jade"},
+   locations:["Imperial Palace","Great Wall","Silk Road","Jade Temple","Dragon Mountain"],areaTypes:["city","historical","mountain","forest","water"]},
+  {id:"aztec",name:"🦅 Aztec Empire",period:"1300–1521 AD",region:"Americas",desc:"Quetzalcoatl, Jaguar Warriors and Sun Gods",bg:"🌞",hero:"🗿",color:"#d35400",
+   enemies:["🐆 Jaguar Warrior","🐍 Quetzalcoatl","💀 Obsidian Skull","🌧️ Tlaloc","🦅 Eagle Warrior"],
+   boss:{name:"☀️ Huitzilopochtli",hp:110},special:{name:"Sun Stone Power",desc:"Sacrifice 5 HP to deal +10 damage!",trigger:"sacrifice"},
+   locations:["Tenochtitlan","Temple of Sun","Sacred Cenote","Eagle Camp","Moon Pyramid"],areaTypes:["city","historical","water","mountain","forest"]},
+  {id:"inca",name:"☀️ Inca Empire",period:"1438–1533 AD",region:"Americas",desc:"Machu Picchu, the Condor and mountain gods",bg:"🏔️",hero:"👑",color:"#f39c12",
+   enemies:["🦅 Giant Condor","🦙 Spirit Llama","🌋 Volcano Demon","🏔️ Mountain Giant","🐍 Amaru Serpent"],
+   boss:{name:"🌋 Supay",hp:95},special:{name:"Inti's Blessing",desc:"Sun god boosts HP +10 at battle start!",trigger:"hp_boost"},
+   locations:["Machu Picchu","Sun Temple","Sacred Valley","Lake Titicaca","Condor Peak"],areaTypes:["mountain","historical","water","city","forest"]},
+  {id:"maya",name:"🌿 Maya Civilization",period:"2000 BC–1500 AD",region:"Americas",desc:"Jungle temples, star maps and ancient mysteries",bg:"🌿",hero:"🔭",color:"#1abc9c",
+   enemies:["🐆 Jungle Jaguar","🐊 River Serpent","💀 Ah Puch","🦇 Camazotz Bat","🌿 Jungle Spirit"],
+   boss:{name:"🐍 Kukulkan",hp:105},special:{name:"Star Calendar",desc:"30% chance to dodge attacks!",trigger:"dodge"},
+   locations:["Chichen Itza","Tikal Jungle","Sacred Cenote","Observatory","Kulkulan Pyramid"],areaTypes:["forest","historical","water","mountain","city"]},
+  {id:"india",name:"🐘 Ancient India",period:"1500–200 BC",region:"Asia",desc:"Ramayana, Mahabharata and the Vedic gods",bg:"🐘",hero:"🙏",color:"#e91e63",
+   enemies:["🦁 Narasimha","🐍 Naga Serpent","👹 Asura Demon","🐘 War Elephant","🔥 Agni Spirit"],
+   boss:{name:"👹 Ravana",hp:120},special:{name:"Dharma's Path",desc:"3 win streak = full HP restore!",trigger:"streak_heal"},
+   locations:["Ayodhya City","Lanka Fortress","Ganges River","Himalaya Ashram","Kurukshetra"],areaTypes:["city","historical","water","mountain","forest"]},
+  {id:"mesopotamia",name:"🌙 Mesopotamia",period:"3500–539 BC",region:"Asia",desc:"Babylon, Gilgamesh and the cradle of civilization",bg:"🌙",hero:"📜",color:"#795548",
+   enemies:["🦁 Lion of Ishtar","🐂 Bull of Heaven","🌊 Flood Demon","💀 Underworld Ghost","🦅 Anzu Bird"],
+   boss:{name:"🌲 Humbaba",hp:90},special:{name:"Gilgamesh's Strength",desc:"First hit each battle deals double damage!",trigger:"first_double"},
+   locations:["Babylon Gardens","Ziggurat Temple","Euphrates Banks","Gate of Ishtar","Tower of Babel"],areaTypes:["city","historical","water","forest","mountain"]},
+  {id:"arabian",name:"☪️ Arabian Nights",period:"8th–13th Century",region:"Asia",desc:"Djinn, Sinbad and 1001 magical nights",bg:"🌙",hero:"🧞",color:"#9b59b6",
+   enemies:["🧞 Evil Djinn","🐍 Desert Viper","💨 Sand Golem","🦅 Roc Bird","👁️ Cave Demon"],
+   boss:{name:"🧞 Djinn King",hp:100},special:{name:"Lamp's Wish",desc:"Once per 5 battles: wish for full HP!",trigger:"wish"},
+   locations:["Baghdad Bazaar","Cave of Wonders","Desert Oasis","Sinbad's Harbor","Magic Palace"],areaTypes:["city","historical","water","mountain","forest"]},
+  {id:"mali",name:"👑 Mali Empire",period:"1235–1600 AD",region:"Africa",desc:"Sundiata legend, gold trade and griots",bg:"👑",hero:"🥁",color:"#ff9800",
+   enemies:["🦁 Savanna Lion","🐊 River Crocodile","💀 Desert Spirit","🦅 War Eagle","🌪️ Harmattan"],
+   boss:{name:"🦁 Simba Jinn",hp:85},special:{name:"Mansa's Gold",desc:"Double gold from every battle!",trigger:"gold_double"},
+   locations:["Timbuktu","Niger River","Salt Mine","Djenne Mosque","Lion Savanna"],areaTypes:["city","historical","water","forest","mountain"]},
+  {id:"polynesia",name:"🌺 Polynesian Myths",period:"Ancient–1000 AD",region:"Oceania",desc:"Maui, ocean voyagers and island spirits",bg:"🌊",hero:"🏄",color:"#00bcd4",
+   enemies:["🦈 Great Shark","🐙 Kraken","🌊 Sea Titan","🌋 Lava Demon","🦅 Storm Eagle"],
+   boss:{name:"🌋 Pele",hp:95},special:{name:"Maui's Hook",desc:"25% chance to stun the enemy!",trigger:"stun"},
+   locations:["Hawaii Village","Sacred Marae","Open Ocean","Volcanic Island","Star Point"],areaTypes:["water","historical","city","mountain","forest"]},
+  {id:"slavic",name:"🧙 Slavic Myths",period:"Pre-Christian Era",region:"Europe",desc:"Baba Yaga, Firebird and forest spirits",bg:"❄️",hero:"🎭",color:"#607d8b",
+   enemies:["🧙 Baba Yaga","🔥 Firebird","🌲 Leshy Spirit","🧊 Frost Demon","💀 Vampire"],
+   boss:{name:"🐍 Zmey Gorynych",hp:100},special:{name:"Baba Yaga's Hut",desc:"Random: heal OR x2 gold OR x2 EXP!",trigger:"random"},
+   locations:["Kiev Village","Enchanted Forest","Baba Yaga's Hut","Firebird Nest","Zmey's Cave"],areaTypes:["city","forest","historical","mountain","water"]},
+  {id:"persia",name:"🏔️ Persian Empire",period:"550–331 BC",region:"Asia",desc:"Shahnameh heroes, Rustam and Zoroastrian myths",bg:"🌟",hero:"👘",color:"#9c27b0",
+   enemies:["🦁 Simurgh","🐉 Div Demon","⚔️ Immortal Soldier","🌪️ Wind Div","🔥 Ahriman Spawn"],
+   boss:{name:"🐉 Zahhak",hp:110},special:{name:"Rustam's Strength",desc:"Execute enemy instantly below 20% HP!",trigger:"execute"},
+   locations:["Persepolis","Silk Road Bazaar","Fire Temple","Alborz Mountains","Babylon Gates"],areaTypes:["city","historical","mountain","forest","water"]}
+];
+
+const REGIONS=["All","Asia","Europe","Americas","Africa","Oceania"];
+const DISC_TYPES={new:{label:"🆕 NEW FINDING",color:"#3498db"},wrong:{label:"🔄 WE WERE WRONG",color:"#e74c3c"},mystery:{label:"❓ MYSTERY",color:"#9b59b6"},ongoing:{label:"🔬 ONGOING",color:"#27ae60"}};
+
+const FRIENDS=[
+  {id:"puppy",name:"🐶 Loyal Puppy",need:5,atk:2,desc:"+2 attack"},
+  {id:"cat",name:"🐱 Magic Cat",need:15,atk:3,desc:"+3 attack"},
+  {id:"fairy",name:"🧚 Forest Fairy",need:30,atk:4,desc:"+4 attack"},
+  {id:"phoenix",name:"🔥 Phoenix",need:50,atk:5,desc:"+5 attack"},
+  {id:"dragon",name:"🐲 Baby Dragon",need:75,atk:7,desc:"+7 attack"},
+  {id:"unicorn",name:"🦄 Unicorn",need:100,atk:10,desc:"+10 attack"}
+];
+const ACHIEVES=[
+  {id:"s1",icon:"👣",name:"First Steps",check:()=>G.totalSteps>=1},
+  {id:"s100",icon:"🚶",name:"Walker",check:()=>G.totalSteps>=100},
+  {id:"d1k",icon:"📏",name:"1KM Journey",check:()=>G.totalDist>=1000},
+  {id:"k1",icon:"⚔️",name:"First Battle",check:()=>G.kills>=1},
+  {id:"k10",icon:"🗡️",name:"Warrior",check:()=>G.kills>=10},
+  {id:"k50",icon:"🏆",name:"Champion",check:()=>G.kills>=50},
+  {id:"l5",icon:"⭐",name:"Level 5",check:()=>G.level>=5},
+  {id:"l10",icon:"💪",name:"Level 10",check:()=>G.level>=10},
+  {id:"a10",icon:"😇",name:"Redeemer",check:()=>G.angels>=10},
+  {id:"w3",icon:"🌍",name:"World Traveler",check:()=>G.visitedWorlds.length>=3},
+  {id:"d5",icon:"📚",name:"Scholar",check:()=>G.foundDiscs.length>=5},
+  {id:"d15",icon:"🎓",name:"Historian",check:()=>G.foundDiscs.length>=15},
+  {id:"dall",icon:"🏛️",name:"Master of Antiquity",check:()=>G.foundDiscs.length>=DISCOVERIES.length},
+  {id:"f1",icon:"🐶",name:"First Companion",check:()=>G.friends.length>=1},
+  {id:"boss1",icon:"🐉",name:"Boss Slayer",check:()=>G.bossKills>=1}
+];
+
+// ── STATE ─────────────────────────────────
+let GM="real",selWorld=null,sugWorld=null;
+let inBattle=false,isBoss=false,enemyHp=0,enemyMaxHp=0,curEnemy="";
+let sndOn=true,gpsId=null,lastPos=null;
+let jadeCount=0,killStreak=0,firstHitDone=false,stunNext=false,wishReady=true,wishTimer=0;
+let wsRegion="All",libFilter="all";
+let currentToastDisc=null,toastTimer=null;
+let currentDetailId=null;
+
+let G=JSON.parse(localStorage.getItem("mythWalkV5")||JSON.stringify({
+  level:1,hp:20,maxHp:20,exp:0,steps:0,totalSteps:0,
+  dist:0,totalDist:0,gold:0,angels:0,kills:0,bossKills:0,
+  winStreak:0,worldId:"japan",visitedWorlds:["japan"],
+  inv:{potion:3,sword:0,shield:0},eq:{sword:false,shield:false},
+  friends:[],achieves:[],
+  foundDiscs:[],readDiscs:[],newDiscCount:0
+}));
+if(!G.foundDiscs)G.foundDiscs=[];
+if(!G.readDiscs)G.readDiscs=[];
+if(!G.newDiscCount)G.newDiscCount=0;
+if(!G.bossKills)G.bossKills=0;
+if(!G.visitedWorlds)G.visitedWorlds=["japan"];
+
+// ── DOM HELPERS ───────────────────────────
+function el(id){return document.getElementById(id);}
+function setText(id,v){const e=el(id);if(e)e.textContent=String(v);}
+function setHtml(id,v){const e=el(id);if(e)e.innerHTML=v;}
+function setStyle(id,p,v){const e=el(id);if(e)e.style[p]=v;}
+function addCls(id,c){const e=el(id);if(e)e.classList.add(c);}
+function remCls(id,c){const e=el(id);if(e)e.classList.remove(c);}
+function setCls(id,c){const e=el(id);if(e)e.className=c;}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  addCls(id,'active');
+  const isGame=id==='gameScreen'||id==='libraryScreen';
+  setStyle('bottomNav','display',isGame?'flex':'none');
+  if(id==='gameScreen'){setCls('navGame','nav-btn active');setCls('navLib','nav-btn');setCls('navFriends','nav-btn');setCls('navAchieve','nav-btn');}
+  if(id==='libraryScreen'){setCls('navLib','nav-btn active');setCls('navGame','nav-btn');setCls('navFriends','nav-btn');setCls('navAchieve','nav-btn');renderLibrary();}
+}
+
+// ── TITLE ─────────────────────────────────
+el('realStartBtn').addEventListener('click',()=>{GM='real';buildWorldSelect();showScreen('worldScreen');});
+el('testStartBtn').addEventListener('click',()=>{GM='test';buildWorldSelect();showScreen('worldScreen');});
+el('wsBackBtn').addEventListener('click',()=>showScreen('titleScreen'));
+el('confirmBtn').addEventListener('click',confirmWorld);
+el('wsSearch').addEventListener('input',renderWorlds);
+
+// ── BOTTOM NAV ─────────────────────────────
+el('navGame').addEventListener('click',()=>showScreen('gameScreen'));
+el('navLib').addEventListener('click',()=>{
+  G.newDiscCount=0;setStyle('libBadge','display','none');doSave();showScreen('libraryScreen');
+});
+el('navFriends').addEventListener('click',showFriends);
+el('navAchieve').addEventListener('click',showAchieves);
+
+// ── WORLD SELECT ──────────────────────────
+function buildWorldSelect(){
+  const f=el('wsFilter');if(!f)return;
+  f.innerHTML=REGIONS.map(r=>`<button class="fbtn${r===wsRegion?' on':''}" data-r="${r}">${r}</button>`).join('');
+  f.querySelectorAll('.fbtn').forEach(b=>b.addEventListener('click',()=>{wsRegion=b.dataset.r;buildWorldSelect();}));
+  setStyle('wsConfirm','display','none');selWorld=null;renderWorlds();
+}
+function renderWorlds(){
+  const q=(el('wsSearch')?.value||'').toLowerCase();
+  const list=el('worldList');if(!list)return;
+  list.innerHTML='';
+  WORLDS.filter(w=>(wsRegion==='All'||w.region===wsRegion)&&(!q||w.name.toLowerCase().includes(q)||w.region.toLowerCase().includes(q)||w.desc.toLowerCase().includes(q))).forEach(w=>{
+    const cur=G.worldId===w.id,vis=G.visitedWorlds.includes(w.id);
+    const d=document.createElement('div');
+    d.className='wcard'+(selWorld?.id===w.id?' sel':'');
+    d.style.background=`linear-gradient(135deg,${w.color}33,${w.color}11)`;
+    d.innerHTML=`<div class="wcard-bg">${w.bg}</div>
+      ${cur?`<div class="wcard-tag" style="background:${w.color}cc">✅ Active</div>`:vis?`<div class="wcard-tag" style="background:#333">Visited</div>`:''}
+      <div class="wcard-row">
+        <div class="wcard-icon">${w.bg}</div>
+        <div class="wcard-info">
+          <div class="wcard-name">${w.name}</div>
+          <div class="wcard-period">📅 ${w.period} • ${w.region}</div>
+          <div class="wcard-desc">${w.desc}</div>
+          <div class="wcard-enemies">${w.enemies.slice(0,4).map(e=>e.split(' ')[0]).join(' ')}</div>
+          <div class="wcard-special">⚡ ${w.special.name}: ${w.special.desc}</div>
+        </div>
+        <div style="text-align:center;min-width:32px;"><div style="font-size:18px;">${w.boss.name.split(' ')[0]}</div><div style="font-size:9px;color:#e74c3c;">BOSS</div></div>
+      </div>`;
+    d.addEventListener('click',()=>{selWorld=w;list.querySelectorAll('.wcard').forEach(c=>c.classList.remove('sel'));d.classList.add('sel');setStyle('wsConfirm','display','block');});
+    list.appendChild(d);
+  });
+}
+function confirmWorld(){
+  if(!selWorld)return;
+  G.worldId=selWorld.id;
+  if(!G.visitedWorlds.includes(selWorld.id))G.visitedWorlds.push(selWorld.id);
+  doSave();initGame();showScreen('gameScreen');
+}
+
+// ── GAME INIT ─────────────────────────────
+function initGame(){
+  const mb=el('modeBar');
+  if(mb){mb.textContent=GM==='test'?'🧪 DEV/TEST MODE — Simulated steps':'✅ REAL MODE — GPS tracking active';mb.className=GM==='test'?'mode-bar test':'mode-bar real';}
+  setStyle('testPanel','display',GM==='test'?'block':'none');
+  if(GM==='real')startGPS();
+  updateWorldUI();updateDisplay();updateMap();
+}
+function getWorld(id){return WORLDS.find(w=>w.id===(id||G.worldId))||WORLDS[0];}
+function updateWorldUI(){
+  const w=getWorld();
+  setText('locWorld',`${w.name} • ${w.period}`);
+  setText('mapBg',w.bg);setText('mapPlayer',w.hero);
+  setText('wbIcon',w.bg);setText('wbName',w.name);
+  setText('wbPeriod',`📅 ${w.period} • ${w.region}`);
+  setText('wbSpecial',`⚡ ${w.special.name}: ${w.special.desc}`);
+  setText('wbBossEmo',w.boss.name.split(' ')[0]);
+  const banner=el('worldBanner');if(banner)banner.style.background=`linear-gradient(135deg,${w.color}44,${w.color}11)`;
+}
+
+// ── TOPBAR BUTTONS ─────────────────────────
+el('homeBtn').addEventListener('click',()=>{
+  if(inBattle&&!confirm('⚠️ In battle! Return to home?'))return;
+  inBattle=false;if(gpsId){navigator.geolocation.clearWatch(gpsId);gpsId=null;}
+  showScreen('titleScreen');setStyle('bottomNav','display','none');
+});
+el('sndBtn').addEventListener('click',()=>{sndOn=!sndOn;setText('sndBtn',sndOn?'🔊':'🔇');});
+el('worldBtn').addEventListener('click',showWorldModal);
+el('atkBtn').addEventListener('click',doAttack);
+el('potBtn').addEventListener('click',usePotion);
+el('swEq').addEventListener('click',()=>toggleEquip('sword'));
+el('shEq').addEventListener('click',()=>toggleEquip('shield'));
+el('shopBtn').addEventListener('click',showShop);
+el('mCloseBtn').addEventListener('click',closeModal);
+
+// ── TEST PANEL ────────────────────────────
+el('t1').addEventListener('click',()=>addSteps(1));
+el('t5').addEventListener('click',()=>addSteps(5));
+el('t10').addEventListener('click',()=>addSteps(10));
+el('t500').addEventListener('click',()=>addDist(500));
+el('tGold').addEventListener('click',()=>{G.gold+=100;updateDisplay();doSave();showMsg('💰 +100 Gold');});
+el('tAngel').addEventListener('click',()=>{G.angels+=5;checkFriends();updateDisplay();doSave();showMsg('😇 +5 Angels');});
+el('tDisc').addEventListener('click',()=>triggerDiscovery(true));
+el('tReset').addEventListener('click',()=>{if(confirm('🗑️ Reset ALL data?')){localStorage.removeItem('mythWalkV5');location.reload();}});
+
+// ── GPS ───────────────────────────────────
+el('gpsAccBtn').addEventListener('click',acceptSuggest);
+el('gpsChangeBtn').addEventListener('click',()=>{hideGps();showWorldModal();});
+el('gpsDismissBtn').addEventListener('click',hideGps);
+
+function startGPS(){
+  if(!navigator.geolocation){showMsg('GPS not supported');return;}
+  gpsId=navigator.geolocation.watchPosition(onGPS,onGPSErr,{enableHighAccuracy:true,maximumAge:10000,timeout:15000});
+  setText('locName','📍 Getting GPS...');
+}
+function onGPS(pos){
+  const{latitude:la,longitude:lo}=pos.coords;
+  if(lastPos){
+    const d=calcDist(lastPos.la,lastPos.lo,la,lo);
+    if(d>5&&d<500){G.dist+=d;G.totalDist+=d;const ns=Math.floor(d/1.3);G.steps+=ns;G.totalSteps+=ns;updateDisplay();updateMap();checkBattle();checkAchieves();doSave();}
+    if(calcDist(lastPos.ala||la,lastPos.alo||lo,la,lo)>200){detectArea(la,lo);lastPos.ala=la;lastPos.alo=lo;}
+  }
+  lastPos={la,lo,ala:lastPos?.ala||la,alo:lastPos?.alo||lo};
+  revGeo(la,lo);
+}
+function onGPSErr(){setText('locName','📍 GPS Signal Lost');}
+function calcDist(la1,lo1,la2,lo2){
+  const R=6371000,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180;
+  const a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function revGeo(la,lo){
+  fetch(`https://nominatim.openstreetmap.org/reverse?lat=${la}&lon=${lo}&format=json`)
+    .then(r=>r.json()).then(d=>{const a=d.address||{};setText('locName',`📍 ${a.suburb||a.neighbourhood||a.city||a.town||a.village||'GPS Active'}`);}).catch(()=>setText('locName','📍 GPS Active'));
+}
+function detectArea(la,lo){
+  fetch(`https://nominatim.openstreetmap.org/reverse?lat=${la}&lon=${lo}&format=json`)
+    .then(r=>r.json()).then(d=>{
+      const n=(d.display_name||'').toLowerCase(),t=d.type||'';
+      let at='city';
+      if(t.includes('water')||n.includes('lake')||n.includes('river')||n.includes('sea'))at='water';
+      else if(t.includes('forest')||n.includes('forest')||n.includes('park'))at='forest';
+      else if(t.includes('mountain')||n.includes('mountain')||n.includes('hill'))at='mountain';
+      else if(t.includes('historic')||n.includes('temple')||n.includes('castle'))at='historical';
+      const matches=WORLDS.filter(w=>w.areaTypes.includes(at));
+      if(!matches.length)return;
+      sugWorld=matches[Math.floor(Math.random()*matches.length)];
+      const place=(d.display_name||'this area').split(',')[0];
+      setText('gpsSugTitle',`📍 New Area: ${place}`);
+      setText('gpsSugDesc',`Suggested: ${sugWorld.name}`);
+      setText('gpsAccBtn',`✅ Enter ${sugWorld.name}`);
+      showGps();
+    }).catch(()=>{});
+}
+function showGps(){const e=el('gpsBar');if(e){e.classList.add('show');setTimeout(hideGps,12000);}}
+function hideGps(){const e=el('gpsBar');if(e)e.classList.remove('show');}
+function acceptSuggest(){
+  if(sugWorld){G.worldId=sugWorld.id;if(!G.visitedWorlds.includes(sugWorld.id))G.visitedWorlds.push(sugWorld.id);doSave();updateWorldUI();checkAchieves();showNotif(`🌍 Entered ${sugWorld.name}!`);}
+  hideGps();
+}
+
+// ── TEST ──────────────────────────────────
+function addSteps(n){G.steps+=n;G.totalSteps+=n;updateDisplay();updateMap();checkBattle();checkAchieves();doSave();}
+function addDist(m){G.dist+=m;G.totalDist+=m;const ns=Math.floor(m/1.3);G.steps+=ns;G.totalSteps+=ns;updateDisplay();updateMap();checkBattle();checkAchieves();doSave();}
+
+// ── BATTLE ────────────────────────────────
+function checkBattle(){
+  if(!inBattle&&G.steps>0&&G.steps%10===0){if(G.kills>0&&G.kills%50===0)startBoss();else startBattle();}
+}
+function startBattle(){
+  const w=getWorld();inBattle=true;isBoss=false;firstHitDone=false;stunNext=false;
+  const e=w.enemies[Math.floor(Math.random()*w.enemies.length)];
+  curEnemy=e;enemyHp=8+G.level*4;enemyMaxHp=enemyHp;
+  if(w.special.trigger==='heal'){G.hp=Math.min(G.maxHp,G.hp+5);updateDisplay();}
+  if(w.special.trigger==='hp_boost'){G.hp=Math.min(G.maxHp,G.hp+10);updateDisplay();}
+  const[emo,...rest]=e.split(' ');
+  setHtml('battleZone',`<div class="enemy-emo">${emo}</div><div class="enemy-name">${rest.join(' ')} Lv.${G.level}</div><div class="ehp-bar"><div class="ehp-fill" id="ehpF" style="width:100%"></div></div><div id="ehpT" style="font-size:12px;color:#888;">💚 ${enemyHp}/${enemyMaxHp}</div>`);
+  setStyle('atkBtn','display','block');setStyle('potBtn','display','block');
+}
+function startBoss(){
+  const w=getWorld();inBattle=true;isBoss=true;firstHitDone=false;stunNext=false;
+  enemyHp=w.boss.hp;enemyMaxHp=w.boss.hp;curEnemy=w.boss.name;
+  const emo=w.boss.name.split(' ')[0];
+  setHtml('battleZone',`<div class="boss-badge">⚠️ BOSS!</div><div class="enemy-emo">${emo}</div><div class="enemy-name">${w.boss.name}</div><div class="ehp-bar"><div class="ehp-fill" id="ehpF" style="width:100%"></div></div><div id="ehpT" style="font-size:12px;color:#888;">💚 ${enemyHp}/${enemyMaxHp}</div>`);
+  setStyle('atkBtn','display','block');setStyle('potBtn','display','block');
+  showNotif(`⚠️ BOSS: ${w.boss.name}!`);playSound('levelup');
+}
+function doAttack(){
+  if(!inBattle)return;
+  const w=getWorld(),sp=w.special.trigger;
+  const fB=G.friends.reduce((t,fid)=>{const f=FRIENDS.find(fr=>fr.id===fid);return t+(f?f.atk:0);},0);
+  let atk=5+(G.eq.sword?3:0)+fB,def=Math.max(1,3-(G.eq.shield?2:0));
+  if(isBoss)def+=2;
+  if(sp==='double'&&Math.random()<0.2){atk*=2;showSpecial('⚔️ Double Strike!');}
+  if(sp==='first_double'&&!firstHitDone){atk*=2;firstHitDone=true;showSpecial('✨ First hit x2!');}
+  if(sp==='berserker'&&G.hp/G.maxHp<0.3){atk*=3;showSpecial('🔥 BERSERKER x3!');}
+  if(sp==='poison')atk+=2;
+  if(sp==='sacrifice'&&G.hp>5){G.hp-=5;atk+=10;updateDisplay();showSpecial('☀️ Sacrifice!');}
+  if(sp==='execute'&&enemyHp/enemyMaxHp<0.2){atk=9999;showSpecial('💪 Execute!');}
+  if(sp==='shield_bonus'&&G.eq.shield){def=Math.max(0,Math.floor(def*0.5));}
+  if(sp==='stun'&&Math.random()<0.25){stunNext=true;showSpecial("🪝 Stun!");}
+  if(sp==='dodge'&&Math.random()<0.3){def=0;showSpecial('🌟 Dodge!');}
+  enemyHp=Math.max(0,enemyHp-atk);
+  playSound('attack');showMsg(`⚔️ ${Math.min(atk,enemyMaxHp)} damage!`);
+  setStyle('ehpF','width',(enemyHp/enemyMaxHp*100)+'%');
+  setText('ehpT',`💚 ${enemyHp}/${enemyMaxHp}`);
+  if(enemyHp<=0){winBattle();return;}
+  if(stunNext){stunNext=false;showMsg('😵 Enemy stunned!');return;}
+  setTimeout(()=>{G.hp=Math.max(0,G.hp-def);playSound('damage');showMsg(`💥 Hit for ${def}!`);updateDisplay();if(G.hp<=0)gameOver();},600);
+}
+function winBattle(){
+  inBattle=false;
+  const w=getWorld(),sp=w.special.trigger;
+  let gold=3+Math.floor(G.level/2),exp=isBoss?20:5;
+  if(isBoss){gold*=3;G.bossKills++;}
+  if(sp==='gold_double'){gold*=2;}
+  if(sp==='jade'){jadeCount++;if(jadeCount>=5){gold+=20;jadeCount=0;showSpecial('💚 Jade +20g!');}}
+  if(sp==='regen'){G.hp=Math.min(G.maxHp,G.hp+3);}
+  if(sp==='streak_heal'){killStreak++;if(killStreak>=3){G.hp=G.maxHp;killStreak=0;showSpecial('🙏 Full HP!');}}
+  if(sp==='random'){const r=Math.random();if(r<0.33)G.hp=G.maxHp;else if(r<0.66)gold*=2;else exp*=2;}
+  G.exp+=exp;G.gold+=gold;G.kills++;G.winStreak++;G.angels++;
+  const[emo]=curEnemy.split(' ');
+  setHtml('battleZone',`<div style="font-size:52px;">😇</div><div style="font-size:14px;color:#ffd700;font-weight:bold;margin:7px 0;">${isBoss?'⚠️ BOSS DOWN!':'Redeemed! ✨'}</div><div style="font-size:12px;color:#666;">${emo} → Angel!</div><div style="font-size:15px;margin-top:7px;">+${exp} EXP  +${gold} 💰</div>`);
+  playSound('victory');checkFriends();
+  // TRIGGER DISCOVERY after win
+  if(Math.random()<0.6||isBoss)triggerDiscovery(false);
+  setTimeout(()=>{
+    setHtml('battleZone','<div style="font-size:40px;opacity:0.3;">🌟</div><div class="idle-msg">Keep walking!<br><span style="font-size:11px;color:#333;">Every 10 steps = battle</span></div>');
+    setStyle('atkBtn','display','none');setStyle('potBtn','display','none');
+    if(G.exp>=10)levelUp();
+    updateDisplay();checkAchieves();doSave();
+  },2000);
+}
+function gameOver(){
+  G.hp=0;G.winStreak=0;killStreak=0;inBattle=false;
+  setStyle('atkBtn','display','none');setStyle('potBtn','display','none');
+  showMsg('💀 Defeated! Recovering...');
+  setTimeout(()=>{G.hp=G.maxHp;G.steps=0;updateDisplay();doSave();setHtml('battleZone','<div style="font-size:40px;opacity:0.3;">🌟</div><div class="idle-msg">Recovered!</div>');},2000);
+}
+function levelUp(){G.level++;G.exp=0;G.maxHp+=5;G.hp=G.maxHp;playSound('levelup');showNotif(`⬆️ LEVEL UP! Level ${G.level}!`);}
+function usePotion(){
+  if(G.inv.potion<=0){showMsg('❌ No potions!');return;}
+  if(G.hp>=G.maxHp){showMsg('❌ HP already full!');return;}
+  G.inv.potion--;G.hp=Math.min(G.maxHp,G.hp+15);playSound('coin');showMsg('💊 +15 HP!');updateDisplay();doSave();
+}
+function toggleEquip(type){
+  if(G.inv[type]<=0){showMsg(`❌ No ${type}!`);return;}
+  G.eq[type]=!G.eq[type];setCls(type==='sword'?'swEq':'shEq',G.eq[type]?'eq-btn on':'eq-btn');
+  showMsg(`${G.eq[type]?'✅':'⬜'} ${type}`);updateDisplay();doSave();
+}
+
+// ── DISCOVERY SYSTEM ──────────────────────
+function triggerDiscovery(force){
+  // Get world discoveries not yet found
+  const world=getWorld();
+  const worldDiscs=DISCOVERIES.filter(d=>d.world===world.id&&!G.foundDiscs.includes(d.id));
+  if(!worldDiscs.length&&!force)return;
+  // Fall back to any unfound disc if world exhausted
+  const pool=worldDiscs.length?worldDiscs:DISCOVERIES.filter(d=>!G.foundDiscs.includes(d.id));
+  if(!pool.length)return;
+  const disc=pool[Math.floor(Math.random()*pool.length)];
+  // Save to found list
+  G.foundDiscs.push(disc.id);
+  G.newDiscCount++;
+  doSave();updateDisplay();
+  // Show library badge
+  setText('libBadge',G.newDiscCount);setStyle('libBadge','display','block');
+  // Show toast (briefly)
+  showDiscToast(disc);
+}
+
+function showDiscToast(disc){
+  clearTimeout(toastTimer);
+  currentToastDisc=disc;
+  const typeInfo=DISC_TYPES[disc.type]||DISC_TYPES.new;
+  setText('toastIco',disc.icon);
+  const lbl=el('toastType');if(lbl){lbl.textContent=typeInfo.label;lbl.style.color=typeInfo.color;}
+  setText('toastWorld',getWorld(disc.world)?.name||'');
+  setText('toastTitle',disc.title);
+  setText('toastTeaser',disc.teaser);
+  const toast=el('discToast');if(toast)toast.classList.add('show');
+  // Auto-dismiss after 6 seconds
+  toastTimer=setTimeout(()=>{if(toast)toast.classList.remove('show');},6000);
+}
+
+el('toastReadBtn').addEventListener('click',()=>{
+  const toast=el('discToast');if(toast)toast.classList.remove('show');
+  if(currentToastDisc)openDetail(currentToastDisc.id);
+});
+el('toastDismiss').addEventListener('click',()=>{const toast=el('discToast');if(toast)toast.classList.remove('show');});
+
+function openDetail(id){
+  const disc=DISCOVERIES.find(d=>d.id===id);if(!disc)return;
+  currentDetailId=id;
+  if(!G.readDiscs.includes(id)){G.readDiscs.push(id);doSave();}
+  const typeInfo=DISC_TYPES[disc.type]||DISC_TYPES.new;
+  setText('detailIco',disc.icon);
+  setHtml('detailBadge',`<span class="detail-type-badge ${disc.type}">${typeInfo.label}</span>`);
+  setText('detailYear',disc.year);
+  setText('detailTitle',disc.title);
+  setText('detailWorld',`📍 Found in: ${getWorld(disc.world)?.name||''}`);
+  setHtml('detailBody',disc.body);
+  addCls('detailModal','open');
+  // Re-render library to update read status
+  renderLibrary();
+}
+el('detailBack').addEventListener('click',()=>{remCls('detailModal','open');});
+
+// ── LIBRARY ───────────────────────────────
+function renderLibrary(){
+  setText('libSub',`${G.foundDiscs.length}/${DISCOVERIES.length} discoveries found`);
+  const filters=[{k:'all',label:'All'},{k:'new',label:'🆕 New Finds'},{k:'wrong',label:'🔄 Was Wrong'},{k:'mystery',label:'❓ Mystery'},{k:'ongoing',label:'🔬 Ongoing'}];
+  const fEl=el('libFilters');
+  if(fEl)fEl.innerHTML=filters.map(f=>`<button class="lib-filter-btn${libFilter===f.k?' on':''}" data-f="${f.k}">${f.label}</button>`).join('');
+  if(fEl)fEl.querySelectorAll('.lib-filter-btn').forEach(b=>b.addEventListener('click',()=>{libFilter=b.dataset.f;renderLibrary();}));
+  const list=el('libList');if(!list)return;
+  const found=DISCOVERIES.filter(d=>G.foundDiscs.includes(d.id)&&(libFilter==='all'||d.type===libFilter));
+  if(!found.length){
+    list.innerHTML=`<div class="lib-empty"><div class="lib-empty-ico">📚</div><div style="font-size:16px;color:#555;margin-bottom:8px;">${G.foundDiscs.length===0?'No discoveries yet!':'No discoveries of this type yet.'}</div><div style="font-size:13px;color:#333;">Win battles to discover real history!</div></div>`;
+    return;
+  }
+  list.innerHTML='';
+  found.forEach(disc=>{
+    const isRead=G.readDiscs.includes(disc.id);
+    const typeInfo=DISC_TYPES[disc.type]||DISC_TYPES.new;
+    const card=document.createElement('div');
+    card.className=`lib-card ${disc.type}`;
+    card.innerHTML=`
+      <div class="lib-card-top">
+        <div class="lib-card-icon">${disc.icon}</div>
+        <div class="lib-card-meta">
+          <div class="lib-card-type ${disc.type}">${typeInfo.label}</div>
+          <div class="lib-card-world">${getWorld(disc.world)?.name||''}</div>
+        </div>
+        ${!isRead?'<div class="lib-card-unread"></div>':''}
+      </div>
+      <div class="lib-card-title">${disc.title}</div>
+      <div class="lib-card-teaser">${disc.teaser}</div>
+      <div style="font-size:11px;color:#555;margin-top:8px;">📅 ${disc.year} &nbsp; • &nbsp; Tap to read more ›</div>
+    `;
+    card.addEventListener('click',()=>openDetail(disc.id));
+    list.appendChild(card);
+  });
+}
+
+// ── FRIENDS / ACHIEVES ─────────────────────
+function checkFriends(){FRIENDS.forEach(f=>{if(!G.friends.includes(f.id)&&G.angels>=f.need){G.friends.push(f.id);showNotif(`🎊 NEW COMPANION: ${f.name}!`);playSound('levelup');}});}
+function checkAchieves(){ACHIEVES.forEach(a=>{if(!G.achieves.includes(a.id)&&a.check()){G.achieves.push(a.id);showNotif(`🏆 ${a.icon} ${a.name}!`);}});}
+
+// ── MAP ───────────────────────────────────
+function updateMap(){
+  const w=getWorld(),dpa=500;
+  const idx=Math.floor(G.dist/dpa)%w.locations.length;
+  const pct=(G.dist%dpa)/dpa*100;
+  setStyle('progFill','width',pct+'%');
+  setText('progTxt',`${Math.round(G.dist%dpa)}m/${dpa}m → ${w.locations[(idx+1)%w.locations.length]}`);
+  setText('mapLabel',w.locations[idx]);
+  setStyle('mapPlayer','left',(8+pct*0.75)+'%');
+}
+function updateDisplay(){
+  const fB=G.friends.reduce((t,fid)=>{const f=FRIENDS.find(fr=>fr.id===fid);return t+(f?f.atk:0);},0);
+  setText('sLv',G.level);setText('sHp',`${G.hp}/${G.maxHp}`);setText('sExp',`${G.exp}/10`);
+  setText('sGold',G.gold);setText('sAtk',5+(G.eq.sword?3:0)+fB);
+  setText('sSteps',G.totalSteps);
+  setText('sDist',G.totalDist>=1000?`${(G.totalDist/1000).toFixed(2)}km`:`${Math.round(G.totalDist)}m`);
+  setText('sAngels',G.angels);setText('sKills',G.kills);setText('sDisc',G.foundDiscs.length);
+  setCls('swEq',G.eq.sword?'eq-btn on':'eq-btn');setCls('shEq',G.eq.shield?'eq-btn on':'eq-btn');
+}
+
+// ── MODALS ────────────────────────────────
+function showShop(){
+  const items=[{name:'💊 Potion',p:10,key:'potion',desc:'Heals 15 HP'},{name:'🗡️ Sword',p:50,key:'sword',desc:'+3 Attack'},{name:'🛡️ Shield',p:50,key:'shield',desc:'-2 Damage'}];
+  let h=`<div style="text-align:center;margin-bottom:12px;">💰 Gold: <b style="color:#ffd700">${G.gold}</b></div>`;
+  items.forEach(it=>{const can=G.gold>=it.p;h+=`<div class="mitem"><div style="font-size:26px">${it.name.split(' ')[0]}</div><div style="flex:1"><div style="font-weight:bold">${it.name}</div><div style="font-size:12px;color:#666">${it.desc} • 💰${it.p}</div></div><button data-key="${it.key}" data-price="${it.p}" style="background:${can?'#27ae60':'#555'};border:none;color:#fff;padding:6px 12px;border-radius:7px;cursor:pointer;">${can?'BUY':'💸'}</button></div>`;});
+  openModal('🏪 SHOP',h);
+  el('mBody').querySelectorAll('button[data-key]').forEach(b=>b.addEventListener('click',()=>{
+    const key=b.dataset.key,price=parseInt(b.dataset.price);
+    if(G.gold>=price){G.gold-=price;G.inv[key]++;playSound('coin');showMsg('✅ Purchased!');updateDisplay();doSave();closeModal();}else showMsg('❌ Not enough gold!');
+  }));
+}
+function showFriends(){
+  let h=`<div style="text-align:center;margin-bottom:12px;">😇 ${G.angels} Angels • ${G.friends.length}/${FRIENDS.length} Companions</div>`;
+  FRIENDS.forEach(f=>{const has=G.friends.includes(f.id);h+=`<div class="mitem ${has?'frnd':''}"><div style="font-size:26px;">${has?f.name.split(' ')[0]:'🔒'}</div><div style="flex:1;"><div style="font-weight:bold;">${f.name}</div><div style="font-size:12px;color:#666;">${has?f.desc+' ✅':`Need ${f.need} angels (${G.angels}/${f.need})`}</div></div></div>`;});
+  openModal('👥 COMPANIONS',h);
+}
+function showAchieves(){
+  let h=`<div style="text-align:center;margin-bottom:12px;">${G.achieves.length}/${ACHIEVES.length} Unlocked</div>`;
+  ACHIEVES.forEach(a=>{const has=G.achieves.includes(a.id);h+=`<div class="mitem ${has?'yes':''}"><div style="font-size:22px;">${has?a.icon:'🔒'}</div><div><div style="font-weight:bold;color:${has?'#fff':'#444'}">${a.name}</div><div style="font-size:12px;color:#555;">${has?'✅':'???'}</div></div></div>`;});
+  openModal('🏆 ACHIEVEMENTS',h);
+}
+function showWorldModal(){
+  let h=`<div style="font-size:12px;color:#555;text-align:center;margin-bottom:12px;">Visited: ${G.visitedWorlds.length}/18</div>`;
+  WORLDS.forEach(w=>{const cur=w.id===G.worldId;h+=`<div class="mitem ${cur?'yes':''}" data-wid="${w.id}" style="cursor:pointer;"><div style="font-size:24px;">${w.bg}</div><div style="flex:1;"><div style="font-weight:bold;">${w.name}</div><div style="font-size:11px;color:#555;">${w.period}</div></div>${cur?'<div style="color:#2ecc71;">✅</div>':''}</div>`;});
+  openModal('🌍 CHANGE WORLD',h);
+  el('mBody').querySelectorAll('[data-wid]').forEach(b=>b.addEventListener('click',()=>{
+    G.worldId=b.dataset.wid;if(!G.visitedWorlds.includes(b.dataset.wid))G.visitedWorlds.push(b.dataset.wid);
+    doSave();updateWorldUI();updateMap();checkAchieves();showMsg(`🌍 Entered ${getWorld(b.dataset.wid).name}!`);closeModal();
+  }));
+}
+function openModal(t,b){setText('mTitle',t);setHtml('mBody',b);addCls('modal','open');}
+function closeModal(){remCls('modal','open');}
+
+// ── UTILS ─────────────────────────────────
+function showSpecial(txt){setText('spBox',txt);addCls('spFlash','show');setTimeout(()=>remCls('spFlash','show'),1800);}
+let msgT=null,notifT=null;
+function showMsg(t){setText('msgBox',t);clearTimeout(msgT);msgT=setTimeout(()=>setText('msgBox',''),3000);}
+function showNotif(t){setText('notif',t);addCls('notif','show');clearTimeout(notifT);notifT=setTimeout(()=>remCls('notif','show'),3500);}
+function playSound(type){
+  if(!sndOn)return;
+  try{const c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);const t=c.currentTime;g.gain.setValueAtTime(0.15,t);
+    if(type==='attack'){o.frequency.setValueAtTime(400,t);o.frequency.exponentialRampToValueAtTime(200,t+0.1);g.gain.exponentialRampToValueAtTime(0.01,t+0.1);}
+    else if(type==='damage'){o.frequency.setValueAtTime(150,t);g.gain.exponentialRampToValueAtTime(0.01,t+0.2);}
+    else if(type==='victory'){o.frequency.setValueAtTime(523,t);o.frequency.setValueAtTime(659,t+0.1);o.frequency.setValueAtTime(784,t+0.2);g.gain.exponentialRampToValueAtTime(0.01,t+0.3);}
+    else if(type==='levelup'){[262,330,392,523,659].forEach((f,i)=>o.frequency.setValueAtTime(f,t+i*0.1));g.gain.exponentialRampToValueAtTime(0.01,t+0.5);}
+    else if(type==='coin'){o.frequency.setValueAtTime(800,t);g.gain.exponentialRampToValueAtTime(0.01,t+0.1);}
+    o.start(t);o.stop(t+0.6);
+  }catch(e){}
+}
+function doSave(){localStorage.setItem('mythWalkV5',JSON.stringify(G));}
+
+})();
+</script>
+</div>
+</body>
+</html>

@@ -1,1305 +1,2253 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Puppy's Mythical Journey</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Puppy Walk">
+<meta name="theme-color" content="#87CEEB" id="themeColor">
+<title>Puppy Walk</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Segoe UI',Arial,sans-serif;background:#f5f0e8;color:#3a2a1a;min-height:100vh;overflow-x:hidden;}
-#app{max-width:420px;margin:0 auto;min-height:100vh;}
-.screen{display:none;min-height:100vh;flex-direction:column;}
-.screen.active{display:flex;}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  :root{
+    --sky-top:#87CEEB;--sky-bot:#E0F4FF;
+    --ground:#6db33f;--ground-dark:#4a8c28;
+    --puppy-body:#C8924E;--puppy-dark:#9B6A32;--puppy-light:#E8B87A;
+    --puppy-belly:#F5D9A8;--collar:#FF6B35;--nose:#2D1B09;
+    --accent:#FF9F43;--accent2:#7EC8E3;
+    --card:#ffffffee;--card-border:rgba(0,0,0,0.08);
+    --text:#2d2d2d;--text2:#666;--text3:#999;
+    --btn-bg:#FF9F43;--btn-text:#fff;
+    --success:#4CAF50;--danger:#f44336;--info:#2196F3;
+    --radius:16px;--radius-sm:10px;
+    --safe-top:env(safe-area-inset-top,0px);
+    --safe-bot:env(safe-area-inset-bottom,0px);
+  }
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:var(--sky-top);
+    min-height:100dvh;
+    overflow-x:hidden;
+    color:var(--text);
+    user-select:none;
+    -webkit-user-select:none;
+  }
 
-/* ── PASTEL THEME ── */
-:root{
-  --bg:#f5f0e8;
-  --bg2:#ede5d8;
-  --card:#ffffff;
-  --card2:#fdf8f0;
-  --border:#ddd0b8;
-  --gold:#b8860b;
-  --gold-light:#c8960a;
-  --gold-soft:#e8d48a;
-  --ink:#3a2a1a;
-  --ink2:#6a5a4a;
-  --ink3:#9a8a7a;
-  --red:#c0504a;
-  --green:#5a8a5a;
-  --blue:#4a6a9a;
-  --peach:#f0d8c0;
-  --sage:#d8e8d0;
-  --sky:#d0e0f0;
-  --lavender:#e0d8f0;
-  --rose:#f0d8d8;
-}
+  /* ── SKY SCENE ── */
+  #scene{
+    position:relative;
+    width:100%;
+    height:280px;
+    overflow:hidden;
+    transition:background 2s ease;
+  }
+  #sky{
+    position:absolute;inset:0;
+    background:linear-gradient(to bottom,var(--sky-top),var(--sky-bot));
+    transition:all 2s ease;
+  }
+  #sun-moon{
+    position:absolute;
+    width:48px;height:48px;
+    border-radius:50%;
+    transition:all 2s ease;
+    font-size:36px;
+    display:flex;align-items:center;justify-content:center;
+    top:20px;right:40px;
+  }
+  #stars{
+    position:absolute;inset:0;
+    opacity:0;transition:opacity 2s ease;
+    pointer-events:none;
+  }
+  #ground-strip{
+    position:absolute;bottom:0;left:0;right:0;
+    height:72px;
+    background:var(--ground);
+    transition:background 2s ease;
+    border-radius:50% 50% 0 0/20px 20px 0 0;
+  }
+  #ground-dark-strip{
+    position:absolute;bottom:0;left:0;right:0;
+    height:20px;
+    background:var(--ground-dark);
+    transition:background 2s ease;
+  }
+  /* season decorations */
+  #season-deco{position:absolute;bottom:62px;left:0;right:0;height:40px;pointer-events:none}
+  .flower{position:absolute;bottom:0;font-size:18px;animation:sway 3s ease-in-out infinite}
+  .leaf{position:absolute;font-size:14px;animation:leaffall linear infinite}
+  .snowflake{position:absolute;font-size:12px;animation:snowfall linear infinite;opacity:0.8}
+  .breath{position:absolute;border-radius:50%;background:rgba(255,255,255,0.6);animation:breathpuff 2s ease-out infinite}
+  @keyframes sway{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+  @keyframes leaffall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(60px) rotate(360deg);opacity:0}}
+  @keyframes snowfall{0%{transform:translateY(-10px) translateX(0);opacity:1}100%{transform:translateY(50px) translateX(10px);opacity:0}}
+  @keyframes breathpuff{0%{transform:scale(0);opacity:0.7}100%{transform:scale(3);opacity:0}}
 
-/* ── HOME ── */
-#homeScreen{background:linear-gradient(160deg,#f0e8d8,#e8dfd0,#f0ead8);}
-.home-top{text-align:center;padding:25px 20px 15px;}
-.app-title{font-size:22px;font-weight:bold;color:var(--gold);letter-spacing:1px;}
-.app-sub{font-size:11px;color:var(--ink3);margin-top:3px;}
-.puppy-card{margin:0 15px 15px;background:linear-gradient(135deg,#fff9f0,#fff5e8);border:1.5px solid var(--border);border-radius:20px;padding:20px;text-align:center;box-shadow:0 2px 16px rgba(180,140,80,0.12);}
-.puppy-big{font-size:64px;animation:float 3s ease-in-out infinite;}
-@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
-.puppy-name{font-size:18px;font-weight:bold;color:var(--gold);margin-top:8px;cursor:pointer;}
-.puppy-world-status{font-size:12px;color:var(--ink3);margin-top:3px;}
-.sync-row{margin:0 15px 12px;display:flex;gap:10px;align-items:center;}
-.sync-steps{flex:1;background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:12px 15px;box-shadow:0 1px 6px rgba(180,140,80,0.08);}
-.sync-steps-num{font-size:24px;font-weight:bold;color:var(--gold);}
-.sync-steps-label{font-size:11px;color:var(--ink3);margin-top:2px;}
-.sync-btn{background:linear-gradient(135deg,var(--gold),#a07008);color:#fff;border:none;padding:12px 16px;border-radius:12px;font-size:13px;font-weight:bold;cursor:pointer;white-space:nowrap;box-shadow:0 2px 8px rgba(180,140,80,0.25);}
-.sync-status{text-align:center;font-size:11px;color:var(--ink3);margin-bottom:12px;}
-.explore-btn{margin:0 15px 12px;width:calc(100% - 30px);background:linear-gradient(135deg,var(--gold),#c8960a);border:none;color:#fff;padding:14px;border-radius:14px;font-size:16px;font-weight:bold;cursor:pointer;letter-spacing:1px;box-shadow:0 3px 12px rgba(180,140,80,0.3);}
-.home-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:0 15px 15px;}
-.hstat{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:10px;text-align:center;box-shadow:0 1px 6px rgba(180,140,80,0.08);}
-.hstat-n{font-size:20px;font-weight:bold;color:var(--gold);}
-.hstat-l{font-size:10px;color:var(--ink3);margin-top:2px;}
-.setup-note{margin:0 15px 15px;background:#fff8f0;border:1.5px solid #f0d8b8;border-radius:10px;padding:12px;font-size:12px;color:#a07030;line-height:1.5;text-align:center;}
-.setup-note a{color:var(--gold);cursor:pointer;text-decoration:underline;}
+  /* ── PUPPY (div-based — no SVG transform bugs) ── */
+  #puppy-canvas{
+    position:absolute;
+    bottom:56px;
+    left:50%;
+    transform:translateX(-50%);
+    width:88px;height:88px;
+  }
+  #puppy{width:88px;height:88px;position:relative;}
+  #p-body{position:absolute;bottom:16px;left:16px;width:54px;height:38px;background:#c8854a;border-radius:40% 40% 35% 35%;}
+  #p-head{position:absolute;bottom:46px;left:26px;width:36px;height:32px;background:#c8854a;border-radius:50% 50% 40% 40%;}
+  #p-ear-l,#p-ear-r{position:absolute;width:14px;height:18px;background:#a0622a;border-radius:50% 50% 40% 40%;top:-10px;}
+  #p-ear-l{left:2px;transform-origin:bottom left;}#p-ear-r{right:2px;transform-origin:bottom right;}
+  #p-eye-l,#p-eye-r{position:absolute;width:7px;height:7px;background:#1a0a00;border-radius:50%;top:8px;}
+  #p-eye-l{left:6px;}#p-eye-r{right:6px;}
+  #p-eye-l::after,#p-eye-r::after{content:'';position:absolute;width:3px;height:3px;background:#fff;border-radius:50%;top:1px;left:1px;}
+  #p-nose{position:absolute;width:9px;height:6px;background:#2d1a0e;border-radius:50%;bottom:6px;left:50%;transform:translateX(-50%);}
+  #p-mouth{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:14px;height:6px;}
+  #p-mouth::before{content:'';position:absolute;width:14px;height:8px;border-bottom:3px solid #a0622a;border-radius:0 0 50% 50%;top:0;left:0;}
+  #p-tongue{position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);width:10px;height:10px;background:#ff6b8a;border-radius:50% 50% 50% 50%/40% 40% 60% 60%;opacity:0;transition:opacity 0.3s;}
+  #p-tail{position:absolute;bottom:28px;right:6px;width:22px;height:14px;background:#c8854a;border-radius:50% 80% 20% 50%;transform-origin:left center;}
+  #p-leg-fl,#p-leg-fr,#p-leg-bl,#p-leg-br{position:absolute;width:10px;height:20px;background:#c8854a;border-radius:4px 4px 6px 6px;bottom:0;transform-origin:top center;}
+  #p-leg-fl{left:22px;}#p-leg-fr{left:34px;}#p-leg-bl{right:20px;}#p-leg-br{right:10px;}
+  #p-leg-fl::after,#p-leg-fr::after,#p-leg-bl::after,#p-leg-br::after{content:'';position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:10px;height:6px;background:#a0622a;border-radius:50%;}
+  #p-zzz{position:absolute;top:-22px;right:-12px;font-size:17px;font-weight:700;color:#9b7dbf;opacity:0;transition:opacity 0.8s;animation:floatZzz 2s ease-in-out infinite;pointer-events:none;}
 
-/* ── WORLD MAP ── */
-#mapScreen{background:var(--bg);overflow-y:auto;padding-bottom:70px;}
-.map-header{padding:12px 15px;display:flex;align-items:center;gap:10px;border-bottom:1.5px solid var(--border);background:#fff;}
-.map-back{background:var(--bg2);border:1.5px solid var(--border);color:var(--ink);padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer;}
-.map-title{font-size:16px;font-weight:bold;color:var(--gold);}
-.map-mode-badge{margin-left:auto;font-size:11px;color:var(--ink3);background:var(--bg2);padding:3px 8px;border-radius:10px;}
-.world-map-wrap{margin:12px;border-radius:16px;overflow:hidden;border:2px solid var(--border);background:#c8e0f0;position:relative;box-shadow:0 2px 16px rgba(100,120,160,0.15);}
-.world-map-wrap svg{display:block;width:100%;height:auto;}
-.map-region{cursor:pointer;transition:opacity 0.2s;}
-.map-region:hover{opacity:0.85;}
-.map-tooltip{position:absolute;background:rgba(255,255,255,0.95);border:1.5px solid var(--border);color:var(--ink);padding:6px 10px;border-radius:8px;font-size:12px;font-weight:bold;pointer-events:none;display:none;white-space:nowrap;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
-.map-legend{margin:0 12px 10px;display:flex;gap:8px;flex-wrap:wrap;}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3);}
-.legend-dot{width:10px;height:10px;border-radius:50%;}
-.area-select-panel{margin:12px;background:#fff;border:1.5px solid var(--border);border-radius:16px;padding:15px;box-shadow:0 2px 12px rgba(180,140,80,0.1);}
-.area-select-title{font-size:14px;font-weight:bold;color:var(--gold);margin-bottom:3px;}
-.area-select-sub{font-size:11px;color:var(--ink3);margin-bottom:12px;}
-.area-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.area-btn{background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:12px 10px;cursor:pointer;text-align:center;transition:all 0.2s;}
-.area-btn:active{background:var(--peach);}
-.area-btn.explored-area{border-color:#a0c8a0;background:var(--sage);}
-.area-btn-icon{font-size:22px;margin-bottom:4px;}
-.area-btn-name{font-size:12px;font-weight:bold;color:var(--ink);}
-.area-btn-sub{font-size:10px;color:var(--ink3);margin-top:2px;}
-.area-btn-visited{font-size:10px;color:var(--green);margin-top:2px;}
+  /* puppy walk/run animations — mapped to this app's state class names */
+  .state-walk #p-leg-fl{animation:pawL .35s ease infinite;}
+  .state-walk #p-leg-fr{animation:pawR .35s ease infinite;}
+  .state-walk #p-leg-bl{animation:pawR .35s ease infinite;}
+  .state-walk #p-leg-br{animation:pawL .35s ease infinite;}
+  .state-walk #p-tail{animation:tailWag .4s ease infinite;}
+  .state-walk #p-body{animation:bodyBob .35s ease infinite;}
+  .state-walk #p-head{animation:headBob .35s ease infinite;}
+  .state-walk #p-ear-l{animation:earFlap .6s ease infinite;}
+  .state-walk #p-ear-r{animation:earFlap .6s ease infinite reverse;}
+  .state-walk #puppy{animation:puppyRun .35s ease infinite;}
 
-/* ── JOURNEY ── */
-#journeyScreen{background:var(--bg);overflow-y:auto;padding-bottom:70px;}
-.journey-header{padding:12px 15px;display:flex;align-items:center;gap:10px;border-bottom:1.5px solid var(--border);position:sticky;top:0;background:#fff;z-index:10;}
-.journey-world-banner{margin:12px;border-radius:14px;padding:14px;border:1.5px solid var(--border);background:#fff;box-shadow:0 2px 10px rgba(180,140,80,0.1);}
-.jwb-top{display:flex;align-items:center;gap:12px;}
-.jwb-icon{font-size:36px;}
-.jwb-info{flex:1;}
-.jwb-world{font-size:14px;font-weight:bold;}
-.jwb-area{font-size:12px;color:var(--ink2);margin-top:2px;}
-.jwb-period{font-size:11px;color:var(--ink3);margin-top:1px;}
-.jwb-steps{font-size:12px;margin-top:8px;color:var(--ink3);}
-.enc-list{padding:0 12px;}
-.enc-card{background:#fff;border:1.5px solid var(--border);border-radius:16px;margin-bottom:12px;overflow:hidden;box-shadow:0 2px 10px rgba(180,140,80,0.08);}
-.enc-card.rare{border-color:var(--gold-soft);background:#fffdf5;}
-.enc-top{padding:12px 14px;display:flex;align-items:center;gap:10px;border-bottom:1.5px solid var(--border);background:var(--bg2);}
-.enc-char-emo{font-size:28px;}
-.enc-char-name{flex:1;font-size:13px;font-weight:bold;color:var(--ink);}
-.enc-step-tag{font-size:10px;color:var(--ink3);background:var(--bg);padding:2px 8px;border-radius:10px;border:1px solid var(--border);}
-.enc-rare-tag{font-size:10px;color:var(--gold);background:#fff8e0;padding:2px 8px;border-radius:10px;border:1px solid var(--gold-soft);}
-.enc-body{padding:12px 14px;}
-.enc-title{font-size:15px;font-weight:bold;color:var(--ink);margin-bottom:10px;}
-.style-block{margin-bottom:14px;padding-bottom:12px;border-bottom:1.5px solid var(--border);}
-.style-label{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
-.aha-teaser{font-size:14px;color:var(--gold);font-weight:bold;margin-bottom:6px;line-height:1.4;}
-.aha-fact{font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:8px;}
-.reveal-btn{background:var(--bg2);border:1.5px solid var(--border);color:var(--gold);padding:6px 14px;border-radius:16px;font-size:12px;cursor:pointer;}
-.aha-more{font-size:13px;color:var(--ink2);line-height:1.6;margin-top:8px;padding-top:8px;border-top:1.5px solid var(--border);display:none;}
-.story-scene{font-size:13px;color:var(--ink2);line-height:1.7;font-style:italic;margin-bottom:8px;}
-.story-fact{background:var(--sage);border-left:3px solid var(--green);padding:8px 12px;border-radius:0 8px 8px 0;font-size:12px;color:#3a5a3a;line-height:1.5;}
-.conv-speech{background:var(--sky);border:1.5px solid #b0c8e0;border-radius:10px;padding:11px;font-size:13px;color:#2a3a5a;line-height:1.6;margin-bottom:10px;}
-.conv-choices{display:flex;flex-direction:column;gap:6px;}
-.conv-choice{background:var(--lavender);border:1.5px solid #c0b8e0;color:#3a2a5a;padding:9px 13px;border-radius:9px;font-size:13px;cursor:pointer;text-align:left;}
-.conv-choice:active{background:#d0c8f0;}
-.conv-resp{font-size:13px;color:var(--ink2);line-height:1.6;margin-top:8px;padding:10px;background:var(--peach);border-radius:8px;border:1px solid #e0c8a8;display:none;}
-.enc-actions{display:flex;gap:8px;margin-top:12px;padding-top:10px;border-top:1.5px solid var(--border);flex-wrap:wrap;}
-.enc-act-btn{background:var(--bg2);border:1.5px solid var(--border);color:var(--ink2);padding:7px 14px;border-radius:16px;font-size:12px;cursor:pointer;}
-.enc-act-btn.saved{color:var(--green);border-color:#a0c8a0;background:var(--sage);}
-.no-enc{text-align:center;padding:40px 20px;color:var(--ink3);}
-.no-enc-ico{font-size:48px;margin-bottom:12px;opacity:0.5;}
+  .state-run #p-leg-fl{animation:pawL .22s ease infinite;}
+  .state-run #p-leg-fr{animation:pawR .22s ease infinite;}
+  .state-run #p-leg-bl{animation:pawR .22s ease infinite;}
+  .state-run #p-leg-br{animation:pawL .22s ease infinite;}
+  .state-run #p-tail{animation:tailWagFast .2s ease infinite;}
+  .state-run #p-body{animation:bodyBob .22s ease infinite;}
+  .state-run #p-head{animation:headBob .22s ease infinite;}
+  .state-run #puppy{animation:puppyRun .22s ease infinite;}
 
-/* ── JOURNAL ── */
-#journalScreen{background:var(--bg);overflow-y:auto;padding-bottom:70px;}
-.journal-header{padding:14px 15px;border-bottom:1.5px solid var(--border);position:sticky;top:0;background:#fff;z-index:5;}
-.journal-title{font-size:20px;font-weight:bold;color:var(--gold);}
-.journal-sub{font-size:11px;color:var(--ink3);margin-top:3px;}
-.journal-filters{display:flex;gap:6px;flex-wrap:wrap;padding:10px 12px 5px;}
-.jfbtn{background:#fff;border:1.5px solid var(--border);color:var(--ink3);padding:5px 12px;border-radius:20px;font-size:11px;cursor:pointer;}
-.jfbtn.on{background:var(--gold-soft);border-color:var(--gold);color:var(--ink);}
-.journal-list{padding:10px 12px 20px;}
-.jcard{background:#fff;border:1.5px solid var(--border);border-left:3px solid var(--gold);border-radius:12px;padding:13px;margin-bottom:10px;cursor:pointer;box-shadow:0 1px 8px rgba(180,140,80,0.08);}
-.jcard.rare{border-left-color:#f0a820;background:#fffdf5;}
-.jcard-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-.jcard-icon{font-size:24px;}
-.jcard-meta{flex:1;}
-.jcard-char{font-size:12px;font-weight:bold;color:var(--ink);}
-.jcard-world{font-size:11px;color:var(--ink3);}
-.jcard-date{font-size:10px;color:var(--ink3);text-align:right;}
-.jcard-title{font-size:14px;font-weight:bold;color:var(--ink);margin-bottom:4px;}
-.jcard-teaser{font-size:12px;color:var(--ink2);line-height:1.4;}
-.jcard-note{font-size:11px;color:var(--gold);margin-top:6px;}
-.journal-empty{text-align:center;padding:40px 20px;color:var(--ink3);}
+  .state-excited #p-leg-fl{animation:pawL .22s ease infinite;}
+  .state-excited #p-leg-fr{animation:pawR .22s ease infinite;}
+  .state-excited #p-leg-bl{animation:pawR .22s ease infinite;}
+  .state-excited #p-leg-br{animation:pawL .22s ease infinite;}
+  .state-excited #p-tail{animation:tailWagFast .2s ease infinite;}
+  .state-excited #p-body{animation:bodyBob .22s ease infinite;}
+  .state-excited #p-head{animation:headBob .22s ease infinite;}
+  .state-excited #puppy{animation:celebration .3s ease infinite;}
+  .state-excited #p-tongue{opacity:1;}
 
-/* ── SETTINGS ── */
-#settingsScreen{background:var(--bg);overflow-y:auto;padding-bottom:70px;}
-.settings-header{padding:14px 15px;border-bottom:1.5px solid var(--border);background:#fff;}
-.settings-title{font-size:20px;font-weight:bold;color:var(--gold);}
-.settings-sec{margin:12px;background:#fff;border:1.5px solid var(--border);border-radius:16px;padding:15px;margin-bottom:10px;box-shadow:0 1px 8px rgba(180,140,80,0.08);}
-.settings-sec-title{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
-.settings-row{margin-bottom:10px;}
-.settings-label{font-size:13px;color:var(--ink);margin-bottom:5px;}
-.settings-input{width:100%;background:var(--bg2);border:1.5px solid var(--border);color:var(--ink);padding:9px 12px;border-radius:8px;font-size:13px;}
-.settings-input::placeholder{color:var(--ink3);}
-.settings-save{width:100%;background:linear-gradient(135deg,var(--gold),#a07008);color:#fff;border:none;padding:13px;border-radius:12px;font-size:15px;font-weight:bold;cursor:pointer;margin:5px 0;box-shadow:0 2px 8px rgba(180,140,80,0.25);}
-.settings-danger{width:100%;background:var(--rose);border:1.5px solid #e0b8b8;color:var(--red);padding:11px;border-radius:10px;font-size:13px;cursor:pointer;margin-top:6px;}
-.settings-info{font-size:12px;color:var(--ink3);line-height:1.6;margin-bottom:10px;}
-.sync-indicator{font-size:11px;padding:6px 10px;border-radius:8px;margin-top:6px;text-align:center;}
-.sync-indicator.ok{background:var(--sage);color:#2a5a2a;}
-.sync-indicator.err{background:var(--rose);color:var(--red);}
-.sync-indicator.loading{background:var(--peach);color:#7a5020;}
+  .state-sit #p-tail{animation:tailWag 1.2s ease infinite;}
+  .state-sit #p-body{animation:bodyBob 1.5s ease infinite;}
 
-/* ── DETAIL MODAL ── */
-.detail-modal{position:fixed;inset:0;background:rgba(240,235,225,0.98);display:none;flex-direction:column;z-index:3000;overflow-y:auto;}
-.detail-modal.open{display:flex;}
-.detail-content{padding:20px;max-width:420px;margin:0 auto;width:100%;padding-bottom:40px;}
-.detail-back{background:var(--bg2);border:1.5px solid var(--border);color:var(--ink);padding:8px 16px;border-radius:20px;font-size:13px;cursor:pointer;margin-bottom:20px;display:inline-block;}
-.detail-char{font-size:56px;text-align:center;margin-bottom:8px;}
-.detail-world-label{font-size:12px;color:var(--ink3);text-align:center;margin-bottom:4px;}
-.detail-title{font-size:20px;font-weight:bold;color:var(--ink);margin-bottom:16px;line-height:1.3;}
-.detail-body{font-size:14px;line-height:1.8;color:var(--ink2);}
-.detail-body p{margin-bottom:12px;}
-.detail-highlight{background:var(--peach);border-left:3px solid var(--gold);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:13px;color:#7a5010;}
-.detail-source{font-size:11px;color:var(--ink3);font-style:italic;margin-top:8px;}
-.fn-box{margin-top:24px;background:var(--card2);border:1.5px solid var(--border);border-radius:12px;padding:16px;}
-.fn-title{font-size:13px;font-weight:bold;color:var(--gold);margin-bottom:10px;}
-.fn-stars{font-size:26px;letter-spacing:5px;margin-bottom:10px;}
-.fn-star{color:var(--border);cursor:pointer;}
-.fn-star.on{color:var(--gold);}
-.fn-textarea{width:100%;min-height:70px;background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;color:var(--ink);padding:10px;font-size:13px;font-family:inherit;resize:vertical;margin-bottom:10px;}
-.fn-row{display:flex;align-items:center;gap:10px;}
-.fn-save{background:linear-gradient(135deg,var(--gold),#a07008);color:#fff;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:bold;cursor:pointer;}
-.fn-saved-msg{font-size:12px;color:var(--green);}
+  .state-sleep #p-zzz{opacity:1;}
+  .state-nap   #p-zzz{opacity:1;}
 
-/* ── BOTTOM NAV ── */
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:#fff;border-top:1.5px solid var(--border);display:flex;z-index:20;box-shadow:0 -2px 12px rgba(180,140,80,0.1);}
-.nav-btn{flex:1;padding:11px 5px 8px;background:none;border:none;color:var(--ink3);font-size:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;}
-.nav-ico{font-size:22px;}
-.nav-btn.active{color:var(--gold);}
-.nav-badge-wrap{position:relative;display:inline-block;}
-.nav-badge{position:absolute;top:-4px;right:-6px;background:var(--red);color:#fff;font-size:9px;font-weight:bold;padding:1px 4px;border-radius:10px;}
-.toast{position:fixed;bottom:75px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:5000;opacity:0;transition:opacity 0.3s;pointer-events:none;text-align:center;max-width:320px;}
-.toast.show{opacity:1;}
-.loading-overlay{position:fixed;inset:0;background:rgba(245,240,232,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;display:none;}
-.loading-overlay.show{display:flex;}
-.loading-ico{font-size:48px;animation:spin 2s linear infinite;}
-@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
-.loading-txt{font-size:14px;color:var(--gold);margin-top:12px;}
+  .state-sniff #p-head{animation:headBob .8s ease infinite;}
+  .state-sniff #p-tail{animation:tailWag .6s ease infinite;}
+  .state-sniff #p-nose{animation:bodyBob .5s ease infinite;}
+
+  /* keyframes */
+  @keyframes pawL{0%,100%{transform:rotate(-15deg)}50%{transform:rotate(15deg)}}
+  @keyframes pawR{0%,100%{transform:rotate(15deg)}50%{transform:rotate(-15deg)}}
+  @keyframes tailWag{0%,100%{transform:rotate(-20deg)}50%{transform:rotate(30deg)}}
+  @keyframes tailWagFast{0%,100%{transform:rotate(-35deg)}50%{transform:rotate(45deg)}}
+  @keyframes bodyBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  @keyframes headBob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-5px) rotate(3deg)}}
+  @keyframes puppyRun{0%,100%{transform:translateX(-1px)}50%{transform:translateX(1px)}}
+  @keyframes earFlap{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(10deg)}}
+  @keyframes celebration{0%{transform:rotate(-6deg) scale(1.05)}50%{transform:rotate(6deg) scale(1.05)}100%{transform:rotate(-6deg) scale(1.05)}}
+  @keyframes floatZzz{0%,100%{transform:translateY(0) scale(1);opacity:0.8}50%{transform:translateY(-10px) scale(1.1);opacity:1}}
+
+  /* heart bubble for excited */
+  #heart-container{position:absolute;top:-15px;right:5px;pointer-events:none;display:none}
+  .heart-bubble{position:absolute;font-size:14px;animation:heartFloat 1.5s ease-out infinite;opacity:0;}
+  .heart-bubble:nth-child(2){animation-delay:0.5s;right:10px}
+  .heart-bubble:nth-child(3){animation-delay:1s;right:-5px}
+  @keyframes heartFloat{0%{opacity:0;transform:translateY(0)}30%{opacity:1}100%{opacity:0;transform:translateY(-30px)}}
+
+  /* paw prints when walking */
+  #paw-track{position:absolute;bottom:0;left:0;right:0;height:62px;pointer-events:none;overflow:hidden}
+  .paw{position:absolute;bottom:8px;font-size:10px;opacity:0;animation:pawAppear 2s ease-out forwards}
+  @keyframes pawAppear{0%{opacity:0}20%{opacity:0.6}100%{opacity:0;transform:translateX(-60px)}}
+
+  /* ── WATER BOWL ── */
+  #water-bowl{
+    position:absolute;
+    bottom:74px;
+    right:-80px;
+    width:52px;
+    transition:right 0.6s cubic-bezier(0.34,1.2,0.64,1);
+    z-index:5;
+  }
+  #water-bowl.visible{ right:18px; }
+
+  #wb-bowl{
+    position:relative;
+    width:52px; height:18px;
+    background:linear-gradient(to bottom,#b0803a,#7a5520);
+    border-radius:4px 4px 16px 16px;
+    box-shadow:0 3px 8px rgba(0,0,0,0.25);
+    transition:background 0.5s;
+  }
+  /* summer ice mode — bowl gets a frosty tint */
+  #water-bowl.ice-mode #wb-bowl{
+    background:linear-gradient(to bottom,#7ab8d4,#4a8aaa);
+  }
+  #wb-water{
+    position:absolute;
+    top:3px; left:4px; right:4px; height:10px;
+    background:linear-gradient(to bottom,#7ec8e3,#4aa8d0);
+    border-radius:2px 2px 12px 12px;
+    overflow:hidden;
+    transition:background 0.5s;
+  }
+  #water-bowl.ice-mode #wb-water{
+    background:linear-gradient(to bottom,#c8f0ff,#7ec8e3);
+  }
+  /* ice cubes floating in bowl */
+  #wb-ice{
+    position:absolute;
+    top:1px; left:3px; right:3px;
+    display:flex; gap:3px; justify-content:center;
+    opacity:0; transition:opacity 0.4s;
+    pointer-events:none;
+  }
+  #water-bowl.ice-mode #wb-ice{ opacity:1; }
+  .ice-cube{
+    width:7px; height:7px;
+    background:rgba(255,255,255,0.82);
+    border-radius:2px;
+    border:1px solid rgba(180,230,255,0.9);
+    box-shadow:0 0 4px rgba(150,220,255,0.7);
+    animation:iceBob 2s ease-in-out infinite;
+  }
+  .ice-cube:nth-child(2){ animation-delay:0.7s; }
+  .ice-cube:nth-child(3){ animation-delay:1.4s; }
+  @keyframes iceBob{
+    0%,100%{ transform:translateY(0); }
+    50%{     transform:translateY(-2px); }
+  }
+  #wb-ripple{
+    position:absolute;
+    top:5px; left:10px;
+    width:14px; height:4px;
+    background:rgba(255,255,255,0.45);
+    border-radius:50%;
+    opacity:0;
+    animation:ripple 1s ease-in-out infinite;
+  }
+  #wb-label{
+    text-align:center;
+    font-size:13px;
+    margin-top:2px;
+    opacity:0.8;
+    transition:all 0.4s;
+  }
+  @keyframes ripple{
+    0%,100%{transform:scaleX(0.5);opacity:0}
+    50%{transform:scaleX(1);opacity:0.8}
+  }
+  #water-bowl.drinking #wb-ripple{ opacity:1; }
+
+  /* thirst level badge on bowl */
+  #wb-thirst-badge{
+    position:absolute;
+    top:-14px; left:50%; transform:translateX(-50%);
+    font-size:11px; font-weight:700;
+    background:rgba(255,255,255,0.9);
+    border-radius:10px; padding:1px 6px;
+    white-space:nowrap;
+    opacity:0; transition:opacity 0.4s;
+    color:#c05000;
+  }
+  #water-bowl.visible #wb-thirst-badge{ opacity:1; }
+
+  /* panting state — fast open-mouth pant when very hot/thirsty */
+  .state-pant #p-head{ animation:pantHead 0.25s ease-in-out infinite; }
+  .state-pant #p-tongue{ opacity:1; animation:pantTongue 0.25s ease-in-out infinite; }
+  .state-pant #p-tail{ animation:tailWag .5s ease infinite; }
+  .state-pant #p-body{ animation:bodyBob .25s ease-in-out infinite; }
+  @keyframes pantHead{ 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg)} }
+  @keyframes pantTongue{ 0%,100%{transform:translateX(-50%) scaleY(1)} 50%{transform:translateX(-50%) scaleY(1.3)} }
+
+  /* puppy slides toward bowl while drinking */
+  #puppy-canvas.drinking{
+    animation:slideToBowl 0.55s cubic-bezier(0.4,0,0.2,1) forwards;
+  }
+  @keyframes slideToBowl{
+    from{ transform:translateX(-50%); }
+    to{   transform:translateX(calc(-50% + 56px)); }
+  }
+
+  /* drinking state — head bobs deep, tongue out, tail wags */
+  .state-drink #p-head{ animation:drinkBob 0.5s ease-in-out infinite; }
+  .state-drink #p-tongue{ opacity:1; }
+  .state-drink #p-tail{ animation:tailWag .4s ease infinite; }
+  .state-drink #p-ear-l{ animation:earFlap .7s ease infinite; }
+  .state-drink #p-ear-r{ animation:earFlap .7s ease infinite reverse; }
+  .state-drink #p-body{ animation:bodyBob .5s ease-in-out infinite; }
+  @keyframes drinkBob{
+    0%,100%{ transform:translateY(0) rotate(0deg); }
+    50%{     transform:translateY(9px) rotate(12deg); }
+  }
+
+  /* reset slide when done */
+  #puppy-canvas.drink-done{
+    animation:slideBack 0.45s cubic-bezier(0.4,0,0.2,1) forwards;
+  }
+  @keyframes slideBack{
+    from{ transform:translateX(calc(-50% + 56px)); }
+    to{   transform:translateX(-50%); }
+  }
+
+  /* time-of-day label */
+  #time-label{
+    position:absolute;top:12px;left:12px;
+    font-size:11px;font-weight:600;
+    background:rgba(255,255,255,0.3);
+    backdrop-filter:blur(4px);
+    -webkit-backdrop-filter:blur(4px);
+    padding:4px 10px;border-radius:20px;
+    color:#333;transition:color 2s ease;
+  }
+  #season-label{
+    position:absolute;top:12px;right:12px;
+    font-size:11px;
+    background:rgba(255,255,255,0.3);
+    backdrop-filter:blur(4px);
+    -webkit-backdrop-filter:blur(4px);
+    padding:4px 10px;border-radius:20px;
+    color:#333;
+  }
+  #puppy-mood-label{
+    position:absolute;bottom:74px;left:50%;transform:translateX(-50%);
+    font-size:11px;font-weight:600;
+    white-space:nowrap;
+    background:rgba(255,255,255,0.85);
+    padding:3px 10px;border-radius:20px;
+    color:#555;
+    transition:opacity 0.5s ease;
+  }
+
+  /* ── MAIN UI ── */
+  #app{
+    display:flex;flex-direction:column;
+    min-height:100dvh;
+  }
+  #main-content{
+    flex:1;
+    padding:0 0 80px;
+  }
+
+  /* stats bar */
+  #stats-bar{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    gap:1px;
+    background:var(--card-border);
+    border-bottom:1px solid var(--card-border);
+  }
+  .stat-cell{
+    background:var(--card);
+    padding:10px 6px;
+    text-align:center;
+  }
+  .stat-val{font-size:18px;font-weight:700;color:var(--text);line-height:1}
+  .stat-ico{font-size:16px;margin-bottom:2px}
+  .stat-lbl{font-size:10px;color:var(--text2);margin-top:2px;text-transform:uppercase;letter-spacing:0.3px}
+
+  /* action buttons */
+  #action-zone{
+    padding:16px;
+    display:flex;gap:10px;
+    flex-direction:column;
+  }
+  .btn-primary{
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    border-radius:var(--radius);
+    padding:16px;
+    font-size:17px;font-weight:600;
+    width:100%;cursor:pointer;
+    transition:transform 0.1s, opacity 0.1s;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .btn-primary:active{transform:scale(0.97);opacity:0.9}
+  .btn-secondary{
+    background:var(--card);
+    color:var(--text);
+    border:1.5px solid var(--card-border);
+    border-radius:var(--radius);
+    padding:13px;
+    font-size:15px;font-weight:500;
+    width:100%;cursor:pointer;
+    transition:transform 0.1s, background 0.15s;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .btn-secondary:active{transform:scale(0.97);background:#f5f5f5}
+  .btn-row{display:flex;gap:10px}
+  .btn-row .btn-secondary{flex:1}
+  .btn-danger{border-color:#ffcccc;color:var(--danger)}
+
+  /* section header */
+  .section-hd{
+    padding:16px 16px 8px;
+    font-size:13px;font-weight:600;
+    color:var(--text2);
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+  }
+
+  /* health / step input card */
+  .card{
+    margin:0 16px 12px;
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:var(--radius);
+    padding:16px;
+  }
+  .card-title{font-size:15px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .card-body{font-size:14px;color:var(--text2);line-height:1.5}
+
+  /* step input */
+  .step-input-row{display:flex;gap:8px;margin-top:12px;align-items:stretch}
+  .step-input-row input{
+    flex:1;
+    padding:12px;
+    border:1.5px solid var(--card-border);
+    border-radius:var(--radius-sm);
+    font-size:16px;
+    color:var(--text);
+    background:#f9f9f9;
+    outline:none;
+  }
+  .step-input-row input:focus{border-color:var(--accent)}
+  .step-input-row button{
+    padding:0 20px;
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    border-radius:var(--radius-sm);
+    font-size:15px;font-weight:600;
+    cursor:pointer;
+  }
+
+  /* quick add buttons */
+  .quick-add{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .quick-add button{
+    padding:7px 14px;
+    background:#f0f0f0;
+    border:none;border-radius:20px;
+    font-size:13px;cursor:pointer;
+    color:var(--text);
+    transition:background 0.15s;
+  }
+  .quick-add button:active{background:#e0e0e0}
+
+  /* adventure tabs */
+  .tab-bar{display:flex;gap:2px;padding:0 16px;margin-bottom:8px}
+  .tab{
+    flex:1;padding:9px 4px;
+    text-align:center;font-size:13px;
+    border-bottom:2px solid transparent;
+    color:var(--text2);cursor:pointer;
+    transition:all 0.2s;
+  }
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+
+  /* adventure display */
+  .adventure-card{
+    margin:0 16px 12px;
+    background:linear-gradient(135deg,#1a1a2e,#16213e);
+    border-radius:var(--radius);
+    padding:16px;
+    color:#fff;
+    position:relative;overflow:hidden;
+  }
+  .adventure-card::before{
+    content:'';position:absolute;
+    top:-20px;right:-20px;
+    width:80px;height:80px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.05);
+  }
+  .adv-title{font-size:15px;font-weight:600;opacity:0.85;margin-bottom:6px}
+  .adv-loc{font-size:20px;font-weight:700;margin-bottom:10px;line-height:1.3}
+  .adv-progress{height:6px;background:rgba(255,255,255,0.15);border-radius:3px;margin-bottom:8px}
+  .adv-fill{height:100%;border-radius:3px;background:linear-gradient(to right,#FF9F43,#FFD700);transition:width 0.5s ease}
+  .adv-steps{font-size:14px;opacity:0.85;line-height:1.4}
+
+  /* history */
+  .history-item{
+    display:flex;align-items:center;gap:12px;
+    padding:12px 16px;
+    border-bottom:1px solid var(--card-border);
+  }
+  .history-item:last-child{border-bottom:none}
+  .hist-icon{width:36px;height:36px;border-radius:50%;background:#fff3e0;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .hist-info{flex:1}
+  .hist-title{font-size:14px;font-weight:500}
+  .hist-sub{font-size:12px;color:var(--text2);margin-top:2px}
+  .hist-stat{text-align:right;font-size:13px;font-weight:600;color:var(--accent)}
+
+  /* badges */
+  .badges-grid{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 16px}
+  .badge{
+    display:flex;flex-direction:column;align-items:center;
+    width:72px;
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:var(--radius-sm);
+    padding:10px 6px;
+    font-size:10px;color:var(--text2);text-align:center;
+  }
+  .badge-ico{font-size:26px;margin-bottom:4px}
+  .badge.locked{opacity:0.35;filter:grayscale(1)}
+
+  /* bottom nav */
+  #bottom-nav{
+    position:fixed;bottom:0;left:0;right:0;
+    background:var(--card);
+    border-top:1px solid var(--card-border);
+    display:grid;grid-template-columns:repeat(4,1fr);
+    padding-bottom:var(--safe-bot);
+    z-index:100;
+  }
+  .nav-btn{
+    padding:10px 4px 6px;
+    display:flex;flex-direction:column;align-items:center;
+    font-size:10px;color:var(--text2);cursor:pointer;
+    gap:3px;transition:color 0.15s;
+    border:none;background:transparent;
+  }
+  .nav-btn.active{color:var(--accent)}
+  .nav-btn .nav-icon{font-size:22px;transition:transform 0.15s}
+  .nav-btn.active .nav-icon{transform:scale(1.15)}
+
+  /* pages */
+  .page{display:none}
+  .page.active{display:block}
+
+  /* modal overlay */
+  .modal-overlay{
+    position:fixed;inset:0;
+    background:rgba(0,0,0,0.5);
+    z-index:200;
+    display:flex;align-items:flex-end;
+    opacity:0;transition:opacity 0.25s;
+    pointer-events:none;
+  }
+  .modal-overlay.open{opacity:1;pointer-events:all}
+  .modal-sheet{
+    background:#fff;
+    border-radius:20px 20px 0 0;
+    width:100%;
+    padding:20px;
+    padding-bottom:calc(20px + var(--safe-bot));
+    transform:translateY(100%);
+    transition:transform 0.3s ease;
+  }
+  .modal-overlay.open .modal-sheet{transform:translateY(0)}
+  .modal-handle{width:36px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 16px}
+  .modal-title{font-size:18px;font-weight:700;margin-bottom:12px}
+
+  /* test mode panel */
+  #test-panel{
+    position:fixed;bottom:80px;left:16px;right:16px;
+    background:#1a1a2e;
+    border-radius:var(--radius);
+    padding:14px;
+    z-index:150;
+    display:none;
+    color:#fff;
+  }
+  #test-panel.open{display:block}
+  .test-title{font-size:13px;font-weight:600;margin-bottom:10px;opacity:0.8}
+  .test-btns{display:flex;flex-wrap:wrap;gap:6px}
+  .test-btn{
+    padding:7px 12px;
+    background:rgba(255,255,255,0.15);
+    border:none;border-radius:20px;
+    color:#fff;font-size:12px;cursor:pointer;
+  }
+  .test-btn:active{background:rgba(255,255,255,0.3)}
+
+  /* toast */
+  #toast{
+    position:fixed;top:calc(var(--safe-top) + 20px);left:50%;
+    transform:translateX(-50%) translateY(-80px);
+    background:#333;color:#fff;
+    padding:10px 20px;border-radius:20px;
+    font-size:14px;z-index:300;
+    transition:transform 0.3s ease;
+    white-space:nowrap;
+    max-width:90vw;
+  }
+  #toast.show{transform:translateX(-50%) translateY(0)}
+
+  /* sync option card */
+  .sync-option{
+    display:flex;align-items:center;gap:12px;
+    padding:14px;
+    background:var(--card);
+    border:1.5px solid var(--card-border);
+    border-radius:var(--radius-sm);
+    margin-bottom:8px;
+    cursor:pointer;
+  }
+  .sync-option.selected{border-color:var(--accent);background:#fff8f0}
+  .sync-option-icon{font-size:24px;flex-shrink:0}
+  .sync-option-text h4{font-size:14px;font-weight:600;margin-bottom:2px}
+  .sync-option-text p{font-size:12px;color:var(--text2);line-height:1.4}
+
+  /* walk active state */
+  body.walking #scene{height:200px}
+  body.walking #stats-bar .stat-cell{background:#fff9f0}
+
+  /* puppy speech bubble */
+  #speech-bubble{
+    position:absolute;
+    top:-30px;left:50%;transform:translateX(-50%);
+    background:rgba(255,255,255,0.95);
+    border-radius:12px;
+    padding:6px 12px;
+    font-size:12px;font-weight:600;
+    white-space:nowrap;
+    box-shadow:0 2px 8px rgba(0,0,0,0.15);
+    opacity:0;transition:opacity 0.4s ease;
+    pointer-events:none;
+    color:var(--text);
+  }
+  #speech-bubble::after{
+    content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);
+    width:0;height:0;
+    border-left:6px solid transparent;
+    border-right:6px solid transparent;
+    border-top:6px solid rgba(255,255,255,0.95);
+  }
+  #speech-bubble.show{opacity:1}
+
+  /* settings rows */
+  .setting-row{
+    display:flex;align-items:center;
+    padding:14px 16px;
+    border-bottom:1px solid var(--card-border);
+  }
+  .setting-row:last-child{border-bottom:none}
+  .setting-label{flex:1;font-size:15px}
+  .setting-sub{font-size:12px;color:var(--text2);margin-top:2px}
+  .toggle{
+    width:48px;height:28px;
+    background:#ddd;border-radius:14px;
+    position:relative;cursor:pointer;
+    transition:background 0.25s;flex-shrink:0;
+    border:none;
+  }
+  .toggle::after{
+    content:'';position:absolute;
+    width:22px;height:22px;
+    background:#fff;border-radius:50%;
+    top:3px;left:3px;
+    transition:transform 0.25s;
+    box-shadow:0 1px 3px rgba(0,0,0,0.3);
+  }
+  .toggle.on{background:var(--accent)}
+  .toggle.on::after{transform:translateX(20px)}
+
+  /* step counter display */
+  #big-steps{
+    font-size:52px;font-weight:800;
+    text-align:center;
+    color:var(--text);
+    letter-spacing:-2px;
+    margin:8px 0 4px;
+    line-height:1;
+  }
+  #steps-label{font-size:13px;color:var(--text2);text-align:center;margin-bottom:16px}
+
+  /* walk timer */
+  #walk-timer{
+    text-align:center;
+    font-size:28px;font-weight:700;
+    font-variant-numeric:tabular-nums;
+    color:var(--accent);
+    margin:4px 0;
+  }
+
+  @media(prefers-color-scheme:dark){
+    :root{
+      --card:#1e1e1e;--card-border:rgba(255,255,255,0.1);
+      --text:#f0f0f0;--text2:#aaa;--text3:#666;
+      --ground:#3a6b1f;--ground-dark:#2a4d14;
+    }
+    body{background:#0f0f1a}
+    .btn-secondary{background:#2a2a2a}
+    .btn-secondary:active{background:#333}
+    .modal-sheet{background:#1e1e1e}
+    .setting-row{border-color:var(--card-border)}
+    #test-panel{background:#0f0f1a}
+    input{background:#2a2a2a;color:#f0f0f0;border-color:#444}
+    .quick-add button{background:#2a2a2a;color:#f0f0f0}
+    .quick-add button:active{background:#333}
+  }
 </style>
 </head>
 <body>
 <div id="app">
 
-<!-- HOME -->
-<div class="screen active" id="homeScreen">
-  <div class="home-top">
-    <div class="app-title">🗺 PUPPY'S MYTHICAL JOURNEY</div>
-    <div class="app-sub">Walk the real world. Discover ancient legends.</div>
-  </div>
-  <div class="puppy-card">
-    <div class="puppy-big" id="homePuppyEmoji">🐶</div>
-    <div class="puppy-name" id="homePuppyName">Puppy</div>
-    <div class="puppy-world-status" id="homePuppyStatus">Tap to begin exploring</div>
-  </div>
-  <div class="setup-note" id="setupNote" style="display:none;">
-    ⚙️ Add your Worker URL in <a id="setupLink">Settings</a> to sync Apple Health steps &amp; save your journey permanently.
-  </div>
-  <div class="sync-row">
-    <div class="sync-steps">
-      <div class="sync-steps-num" id="homeTodaySteps">—</div>
-      <div class="sync-steps-label">👣 steps today</div>
-    </div>
-    <button class="sync-btn" id="homeSyncBtn">🔄 Sync Steps</button>
-  </div>
-  <div class="sync-status" id="homeSyncStatus">Never synced</div>
-  <button class="explore-btn" id="homeExploreBtn">⚔ EXPLORE THE ANCIENT WORLD</button>
-  <div class="home-stats">
-    <div class="hstat"><div class="hstat-n" id="hstatWorlds">0</div><div class="hstat-l">Worlds visited</div></div>
-    <div class="hstat"><div class="hstat-n" id="hstatAreas">0</div><div class="hstat-l">Areas explored</div></div>
-    <div class="hstat"><div class="hstat-n" id="hstatJournal">0</div><div class="hstat-l">Journal entries</div></div>
-  </div>
-</div>
-
-<!-- WORLD MAP -->
-<div class="screen" id="mapScreen">
-  <div class="map-header">
-    <button class="map-back" id="mapBackBtn">← Back</button>
-    <div class="map-title" id="mapTitle">Choose a Civilization</div>
-    <div class="map-mode-badge" id="mapModeBadge">👣 — steps</div>
-  </div>
-
-  <!-- SVG ILLUSTRATED WORLD MAP -->
-  <div class="world-map-wrap">
-    <div class="map-tooltip" id="mapTooltip"></div>
-    <svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg" id="worldSvg">
-      <!-- Ocean background -->
-      <rect width="400" height="220" fill="#1a2a3a"/>
-      <!-- Ocean texture lines -->
-      <g stroke="#1f3545" stroke-width="0.5" opacity="0.5">
-        <line x1="0" y1="30" x2="400" y2="30"/>
-        <line x1="0" y1="60" x2="400" y2="60"/>
-        <line x1="0" y1="90" x2="400" y2="90"/>
-        <line x1="0" y1="120" x2="400" y2="120"/>
-        <line x1="0" y1="150" x2="400" y2="150"/>
-        <line x1="0" y1="180" x2="400" y2="180"/>
-      </g>
-
-      <!-- CONTINENTS (simplified but geographically placed) -->
-      <!-- Europe -->
-      <path d="M155,40 L175,35 L195,38 L205,50 L200,65 L185,72 L170,68 L158,58 Z" fill="#5a4525" stroke="#3a2a10" stroke-width="1"/>
-      <!-- North Africa -->
-      <path d="M145,72 L210,68 L215,95 L200,110 L165,112 L140,100 L138,82 Z" fill="#6a5530" stroke="#3a2a10" stroke-width="1"/>
-      <!-- Sub-Saharan Africa -->
-      <path d="M155,110 L205,108 L210,150 L185,165 L160,155 L148,130 Z" fill="#5a4820" stroke="#3a2a10" stroke-width="1"/>
-      <!-- Middle East / Mesopotamia -->
-      <path d="M205,55 L235,50 L245,65 L238,80 L215,82 L205,68 Z" fill="#6a5530" stroke="#3a2a10" stroke-width="1"/>
-      <!-- India -->
-      <path d="M245,70 L270,65 L278,85 L268,108 L248,110 L238,90 Z" fill="#5a4525" stroke="#3a2a10" stroke-width="1"/>
-      <!-- China / East Asia -->
-      <path d="M278,40 L320,35 L332,55 L325,78 L295,82 L272,68 Z" fill="#5a4020" stroke="#3a2a10" stroke-width="1"/>
-      <!-- Japan -->
-      <path d="M332,42 L342,38 L348,48 L340,60 L332,55 Z" fill="#5a4020" stroke="#3a2a10" stroke-width="1"/>
-      <!-- Southeast Asia / Polynesia area -->
-      <path d="M298,88 L318,85 L325,100 L308,105 L295,98 Z" fill="#4a3a18" stroke="#3a2a10" stroke-width="1"/>
-      <!-- Americas (West) -->
-      <path d="M50,35 L75,32 L82,58 L75,90 L55,105 L38,85 L40,55 Z" fill="#5a4525" stroke="#3a2a10" stroke-width="1"/>
-      <path d="M60,108 L78,105 L80,140 L65,158 L50,145 L48,120 Z" fill="#5a4020" stroke="#3a2a10" stroke-width="1"/>
-
-      <!-- CIVILIZATION REGIONS (colored, tappable) -->
-
-      <!-- ROME / EUROPE (purple) -->
-      <ellipse class="map-region" data-civ="rome" cx="175" cy="55" rx="22" ry="14" fill="#6a3080" fill-opacity="0.75" stroke="#9a60b0" stroke-width="1.5"/>
-      <text x="175" y="59" text-anchor="middle" font-size="10" fill="#e0b0ff" font-weight="bold" pointer-events="none">🦅 ROME</text>
-
-      <!-- GREECE (blue) -->
-      <ellipse class="map-region" data-civ="greece" cx="195" cy="72" rx="14" ry="9" fill="#2060a0" fill-opacity="0.75" stroke="#4090d0" stroke-width="1.5"/>
-      <text x="195" y="76" text-anchor="middle" font-size="8" fill="#a0d0ff" font-weight="bold" pointer-events="none">🏛 GREECE</text>
-
-      <!-- EGYPT (orange) -->
-      <ellipse class="map-region" data-civ="egypt" cx="195" cy="93" rx="18" ry="11" fill="#a05010" fill-opacity="0.75" stroke="#d08040" stroke-width="1.5"/>
-      <text x="195" y="97" text-anchor="middle" font-size="9" fill="#ffd090" font-weight="bold" pointer-events="none">𓂀 EGYPT</text>
-
-      <!-- CELTIC (green) -->
-      <ellipse class="map-region" data-civ="celtic" cx="157" cy="50" rx="12" ry="8" fill="#205030" fill-opacity="0.75" stroke="#40a060" stroke-width="1.5"/>
-      <text x="157" y="54" text-anchor="middle" font-size="7" fill="#90e0a0" font-weight="bold" pointer-events="none">🍀 CELTIC</text>
-
-      <!-- NORSE (dark blue) -->
-      <ellipse class="map-region" data-civ="norse" cx="172" cy="38" rx="14" ry="8" fill="#1a2850" fill-opacity="0.85" stroke="#4060a0" stroke-width="1.5"/>
-      <text x="172" y="42" text-anchor="middle" font-size="8" fill="#8090e0" font-weight="bold" pointer-events="none">⚡ NORSE</text>
-
-      <!-- MESOPOTAMIA (brown) -->
-      <ellipse class="map-region" data-civ="mesopotamia" cx="225" cy="67" rx="14" ry="9" fill="#805020" fill-opacity="0.75" stroke="#b08040" stroke-width="1.5"/>
-      <text x="225" y="71" text-anchor="middle" font-size="7.5" fill="#e0c080" font-weight="bold" pointer-events="none">🌙 MESOP.</text>
-
-      <!-- INDIA (pink) -->
-      <ellipse class="map-region" data-civ="india" cx="258" cy="88" rx="16" ry="12" fill="#902050" fill-opacity="0.75" stroke="#c05080" stroke-width="1.5"/>
-      <text x="258" y="92" text-anchor="middle" font-size="9" fill="#ffa0c0" font-weight="bold" pointer-events="none">🐘 INDIA</text>
-
-      <!-- CHINA (red) -->
-      <ellipse class="map-region" data-civ="china" cx="305" cy="58" rx="22" ry="14" fill="#902010" fill-opacity="0.75" stroke="#c04030" stroke-width="1.5"/>
-      <text x="305" y="62" text-anchor="middle" font-size="9" fill="#ffa090" font-weight="bold" pointer-events="none">🐉 CHINA</text>
-
-      <!-- JAPAN (red small) -->
-      <ellipse class="map-region" data-civ="japan" cx="338" cy="50" rx="10" ry="9" fill="#a01010" fill-opacity="0.8" stroke="#e04040" stroke-width="1.5"/>
-      <text x="338" y="54" text-anchor="middle" font-size="7" fill="#ffc0c0" font-weight="bold" pointer-events="none">⛩ JAPAN</text>
-
-      <!-- AZTEC (orange-brown) -->
-      <ellipse class="map-region" data-civ="aztec" cx="65" cy="75" rx="18" ry="12" fill="#904010" fill-opacity="0.75" stroke="#c07030" stroke-width="1.5"/>
-      <text x="65" y="79" text-anchor="middle" font-size="8" fill="#ffc080" font-weight="bold" pointer-events="none">🌞 AZTEC</text>
-
-      <!-- INCA (gold) -->
-      <ellipse class="map-region" data-civ="inca" cx="65" cy="120" rx="14" ry="12" fill="#806010" fill-opacity="0.75" stroke="#c09030" stroke-width="1.5"/>
-      <text x="65" y="124" text-anchor="middle" font-size="8" fill="#ffe090" font-weight="bold" pointer-events="none">☀ INCA</text>
-
-      <!-- MAYA (teal) -->
-      <ellipse class="map-region" data-civ="maya" cx="80" cy="98" rx="12" ry="9" fill="#1a6050" fill-opacity="0.75" stroke="#30a080" stroke-width="1.5"/>
-      <text x="80" y="102" text-anchor="middle" font-size="7.5" fill="#80e0c0" font-weight="bold" pointer-events="none">🌿 MAYA</text>
-
-      <!-- MALI (yellow-brown) -->
-      <ellipse class="map-region" data-civ="mali" cx="162" cy="118" rx="16" ry="10" fill="#806020" fill-opacity="0.75" stroke="#b09030" stroke-width="1.5"/>
-      <text x="162" y="122" text-anchor="middle" font-size="8" fill="#ffe090" font-weight="bold" pointer-events="none">👑 MALI</text>
-
-      <!-- POLYNESIA (cyan) -->
-      <ellipse class="map-region" data-civ="polynesia" cx="340" cy="130" rx="20" ry="12" fill="#106070" fill-opacity="0.75" stroke="#2090a0" stroke-width="1.5"/>
-      <text x="340" y="134" text-anchor="middle" font-size="8" fill="#80e0f0" font-weight="bold" pointer-events="none">🌺 POLYNESIA</text>
-
-      <!-- PERSIA (violet) -->
-      <ellipse class="map-region" data-civ="persia" cx="238" cy="52" rx="13" ry="8" fill="#703080" fill-opacity="0.75" stroke="#a060b0" stroke-width="1.5"/>
-      <text x="238" y="56" text-anchor="middle" font-size="7.5" fill="#d0a0ff" font-weight="bold" pointer-events="none">🏔 PERSIA</text>
-
-      <!-- ARABIAN (gold-sand) -->
-      <ellipse class="map-region" data-civ="arabian" cx="225" cy="85" rx="13" ry="8" fill="#806020" fill-opacity="0.75" stroke="#b09040" stroke-width="1.5"/>
-      <text x="225" y="89" text-anchor="middle" font-size="7.5" fill="#ffe0a0" font-weight="bold" pointer-events="none">☪ ARABIAN</text>
-
-      <!-- SLAVIC (grey-blue) -->
-      <ellipse class="map-region" data-civ="slavic" cx="208" cy="45" rx="13" ry="8" fill="#405060" fill-opacity="0.75" stroke="#6080a0" stroke-width="1.5"/>
-      <text x="208" y="49" text-anchor="middle" font-size="7.5" fill="#a0c0e0" font-weight="bold" pointer-events="none">🧙 SLAVIC</text>
-
-      <!-- Arthur (green UK) -->
-      <ellipse class="map-region" data-civ="arthur" cx="155" cy="42" rx="9" ry="7" fill="#205030" fill-opacity="0.75" stroke="#40a060" stroke-width="1.5"/>
-      <text x="155" y="46" text-anchor="middle" font-size="6.5" fill="#90e0a0" font-weight="bold" pointer-events="none">🏰 ARTHUR</text>
-
-      <!-- Compass rose -->
-      <g transform="translate(370,195)">
-        <circle cx="0" cy="0" r="12" fill="rgba(200,150,10,0.1)" stroke="rgba(200,150,10,0.3)" stroke-width="1"/>
-        <text x="0" y="-5" text-anchor="middle" font-size="7" fill="rgba(200,150,10,0.8)">N</text>
-        <text x="0" y="10" text-anchor="middle" font-size="7" fill="rgba(200,150,10,0.5)">S</text>
-        <text x="-9" y="3" text-anchor="middle" font-size="7" fill="rgba(200,150,10,0.5)">W</text>
-        <text x="9" y="3" text-anchor="middle" font-size="7" fill="rgba(200,150,10,0.5)">E</text>
-        <polygon points="0,-8 2,-2 -2,-2" fill="rgba(200,150,10,0.8)"/>
-      </g>
-
-      <!-- Title -->
-      <text x="200" y="212" text-anchor="middle" font-size="8" fill="rgba(200,150,10,0.4)" font-style="italic">Ancient World — Tap a civilization to explore</text>
-    </svg>
-  </div>
-
-  <div class="map-legend">
-    <div class="legend-item"><div class="legend-dot" style="background:#888866;"></div>Not yet explored</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#88cc88;"></div>Explored</div>
-  </div>
-
-  <!-- Area selection panel (shown after tapping a civilization) -->
-  <div class="area-select-panel" id="areaSelectPanel" style="display:none;">
-    <div class="area-select-title" id="areaSelectTitle"></div>
-    <div class="area-select-sub" id="areaSelectSub"></div>
-    <div class="area-grid" id="areaGrid"></div>
-  </div>
-</div>
-
-<!-- JOURNEY -->
-<div class="screen" id="journeyScreen">
-  <div class="journey-header">
-    <button class="map-back" id="journeyBackBtn">← Map</button>
-    <div class="map-title" id="journeyTitle">Exploring...</div>
-  </div>
-  <div class="journey-world-banner" id="journeyBanner"></div>
-  <div class="enc-list" id="encList"></div>
-</div>
-
-<!-- JOURNAL -->
-<div class="screen" id="journalScreen">
-  <div class="journal-header">
-    <div class="journal-title">📚 Journey Journal</div>
-    <div class="journal-sub" id="journalSub">Your mythical discoveries</div>
-  </div>
-  <div class="journal-filters" id="journalFilters"></div>
-  <div class="journal-list" id="journalList"></div>
-</div>
-
-<!-- SETTINGS -->
-<div class="screen" id="settingsScreen">
-  <div class="settings-header"><div class="settings-title">⚙️ Settings</div></div>
-  <div class="settings-sec">
-    <div class="settings-sec-title">🐶 Puppy</div>
-    <div class="settings-row">
-      <div class="settings-label">Name</div>
-      <input class="settings-input" id="setPuppyName" placeholder="Puppy">
-    </div>
-  </div>
-  <div class="settings-sec">
-    <div class="settings-sec-title">☁️ Cloudflare Worker</div>
-    <div class="settings-info">Your Worker URL saves your journal and explored areas permanently — safe even when you clear Safari. Steps are synced by running your Shortcut first, then tapping Sync on the home screen.</div>
-    <div class="settings-row">
-      <input class="settings-input" id="setWorkerUrl" placeholder="https://your-worker.workers.dev">
-    </div>
-    <button class="settings-save" id="testConnectionBtn" style="background:rgba(200,150,10,0.15);color:var(--gold-light);border:1px solid rgba(200,150,10,0.3);">🔌 Test Connection</button>
-    <div class="sync-indicator" id="connectionStatus" style="display:none;"></div>
-  </div>
-  <div class="settings-sec">
-    <div class="settings-sec-title">🧪 Test Mode</div>
-    <div class="settings-info">Try the app without walking. Simulates step counts to generate encounters.</div>
-    <div style="display:flex;gap:8px;margin-bottom:8px;">
-      <button class="settings-save" id="test1k" style="font-size:13px;padding:10px;">+1,000 steps</button>
-      <button class="settings-save" id="test5k" style="font-size:13px;padding:10px;background:linear-gradient(135deg,#555,#333);color:#aaa;">+5,000 steps</button>
-    </div>
-  </div>
-  <div class="settings-sec">
-    <div class="settings-sec-title">📥 Export</div>
-    <button class="settings-save" id="exportBtn" style="background:rgba(200,150,10,0.1);color:var(--gold-light);border:1px solid rgba(200,150,10,0.3);">📥 Export Journal (.txt)</button>
-  </div>
-  <div style="padding:0 12px 15px;">
-    <button class="settings-save" id="saveSettingsBtn">💾 Save Settings</button>
-    <button class="settings-danger" id="resetBtn">🗑️ Reset All Data</button>
-  </div>
-</div>
-
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <button class="nav-btn active" id="navHome"><span class="nav-ico">🏠</span><span>Home</span></button>
-  <button class="nav-btn" id="navMap"><span class="nav-ico">🗺️</span><span>Map</span></button>
-  <button class="nav-btn" id="navJournal">
-    <span class="nav-badge-wrap"><span class="nav-ico">📚</span><span class="nav-badge" id="journalBadge" style="display:none;"></span></span>
-    <span>Journal</span>
-  </button>
-  <button class="nav-btn" id="navSettings"><span class="nav-ico">⚙️</span><span>Settings</span></button>
-</div>
-
-<!-- DETAIL MODAL -->
-<div class="detail-modal" id="detailModal">
-  <div class="detail-content">
-    <button class="detail-back" id="detailBackBtn">← Back</button>
-    <div class="detail-char" id="detailChar"></div>
-    <div class="detail-world-label" id="detailWorldLabel"></div>
-    <div class="detail-title" id="detailTitle"></div>
-    <div class="detail-body" id="detailBody"></div>
-    <div class="fn-box">
-      <div class="fn-title">📓 Field Note</div>
-      <div class="fn-stars" id="fnStars"></div>
-      <textarea class="fn-textarea" id="fnText" placeholder="Your thoughts... what do you want to remember?"></textarea>
-      <div class="fn-row">
-        <button class="fn-save" id="fnSaveBtn">💾 Save Note</button>
-        <span class="fn-saved-msg" id="fnSavedMsg"></span>
+  <!-- SCENE -->
+  <div id="scene">
+    <div id="sky"></div>
+    <div id="sun-moon">☀️</div>
+    <canvas id="stars" width="400" height="280"></canvas>
+    <div id="season-deco"></div>
+    <div id="ground-strip"></div>
+    <div id="ground-dark-strip"></div>
+    <div id="puppy-canvas">
+      <!-- div-based puppy — no SVG transform bugs, legs always on body -->
+      <div id="p-zzz">Zzz</div>
+      <div id="puppy" class="state-sit">
+        <div id="p-body"></div>
+        <div id="p-tail"></div>
+        <div id="p-leg-bl"></div><div id="p-leg-br"></div>
+        <div id="p-head">
+          <div id="p-ear-l"></div><div id="p-ear-r"></div>
+          <div id="p-eye-l"></div><div id="p-eye-r"></div>
+          <div id="p-nose"></div>
+          <div id="p-mouth"><div id="p-tongue"></div></div>
+        </div>
+        <div id="p-leg-fl"></div><div id="p-leg-fr"></div>
+      </div>
+      <!-- speech bubble -->
+      <div id="speech-bubble"></div>
+      <div id="heart-container">
+        <div class="heart-bubble">🤍</div>
+        <div class="heart-bubble">💛</div>
+        <div class="heart-bubble">🧡</div>
       </div>
     </div>
+    <div id="paw-track"></div>
+    <!-- water bowl — slides in after walk ends -->
+    <div id="water-bowl">
+      <div id="wb-thirst-badge"></div>
+      <div id="wb-bowl">
+        <div id="wb-water">
+          <div id="wb-ice">
+            <div class="ice-cube"></div>
+            <div class="ice-cube"></div>
+            <div class="ice-cube"></div>
+          </div>
+        </div>
+        <div id="wb-ripple"></div>
+      </div>
+      <div id="wb-label">💧</div>
+    </div>
+    <div id="time-label">Good morning ☀️</div>
+    <div id="season-label">Spring 🌸</div>
+    <div id="puppy-mood-label">Ready for a walk!</div>
+  </div>
+
+  <!-- PAGES -->
+  <div id="main-content">
+
+    <!-- HOME PAGE -->
+    <div id="page-home" class="page active">
+      <div id="stats-bar">
+        <div class="stat-cell">
+          <div class="stat-ico">👟</div>
+          <div class="stat-val" id="stat-steps">0</div>
+          <div class="stat-lbl">Steps</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-ico">📍</div>
+          <div class="stat-val" id="stat-dist">0.0</div>
+          <div class="stat-lbl">km</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-ico">🔥</div>
+          <div class="stat-val" id="stat-streak">0</div>
+          <div class="stat-lbl">Streak</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-ico">⏱</div>
+          <div class="stat-val" id="stat-time">0</div>
+          <div class="stat-lbl">min</div>
+        </div>
+      </div>
+
+      <div id="action-zone">
+        <div id="walk-timer" style="display:none">00:00</div>
+        <button class="btn-primary" id="btn-walk-toggle" onclick="toggleWalk()">
+          🐾 Start walk
+        </button>
+        <div class="btn-row">
+          <button class="btn-secondary" onclick="openStepEntry()">🍎 Add steps from Health</button>
+          <button class="btn-secondary" onclick="showSyncOptions()">📤 Sync options</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn-secondary" onclick="openModal('modal-talk')">💬 Talk to Puppy</button>
+          <button class="btn-secondary" onclick="openModal('modal-mood')">😊 Mood log</button>
+        </div>
+      </div>
+
+      <!-- Step entry card -->
+      <div class="card" id="step-entry-card" style="display:none">
+        <div class="card-title">🍎 Today's steps from Health app</div>
+        <div class="card-body">
+          Open <b>Health → Browse → Steps</b> to see your step count, then enter it here. Your puppy catches up instantly!
+        </div>
+        <div class="step-input-row">
+          <input type="number" id="health-steps-input" placeholder="e.g. 8432" inputmode="numeric">
+          <button onclick="submitHealthSteps()">Give to Puppy 🐾</button>
+        </div>
+        <div class="quick-add" style="margin-top:10px">
+          <span style="font-size:12px;color:var(--text2);align-self:center">Quick add:</span>
+          <button onclick="addSteps(500)">+500</button>
+          <button onclick="addSteps(1000)">+1K</button>
+          <button onclick="addSteps(2000)">+2K</button>
+          <button onclick="addSteps(5000)">+5K</button>
+        </div>
+        <button class="btn-secondary" style="margin-top:10px" onclick="document.getElementById('step-entry-card').style.display='none'">Done ✓</button>
+      </div>
+
+      <!-- Sync options card -->
+      <div class="card" id="sync-card" style="display:none">
+        <div class="card-title">📤 How to sync your steps</div>
+        <div class="sync-option selected" onclick="selectSync(this,'shortcuts')">
+          <div class="sync-option-icon">📱</div>
+          <div class="sync-option-text">
+            <h4>Apple Shortcuts (Recommended)</h4>
+            <p>Create a shortcut to read Health steps, open when on WiFi or 4G. Battery-friendly, works offline.</p>
+          </div>
+        </div>
+        <div class="sync-option" onclick="selectSync(this,'manual')">
+          <div class="sync-option-icon">✍️</div>
+          <div class="sync-option-text">
+            <h4>Manual entry</h4>
+            <p>Check Health app, type today's steps. Simple and private — no connections needed.</p>
+          </div>
+        </div>
+        <div class="sync-option" onclick="selectSync(this,'motion')">
+          <div class="sync-option-icon">🏃</div>
+          <div class="sync-option-text">
+            <h4>Live motion sensor</h4>
+            <p>Counts steps in real time while you walk. Uses phone accelerometer, no GPS needed.</p>
+          </div>
+        </div>
+        <button class="btn-secondary" style="margin-top:8px" onclick="document.getElementById('sync-card').style.display='none'">Done ✓</button>
+      </div>
+
+      <!-- Shortcuts guide card (shown when shortcuts selected) -->
+      <div class="card" id="shortcuts-guide" style="display:none">
+        <div class="card-title">📱 Apple Shortcuts setup</div>
+        <div class="card-body">
+          <b>One-time setup (2 min):</b><br>
+          1. Open Shortcuts app → New Shortcut<br>
+          2. Add: <i>Get Health Samples</i> (type: Steps, period: Today)<br>
+          3. Add: <i>Open URL</i> → paste your app URL<br>
+          4. Add shortcut to Home Screen<br><br>
+          <b>Daily use:</b> Tap shortcut when on WiFi → steps auto-fill below 🐾<br><br>
+          <span style="color:var(--accent)">💡 Works great after a walk when you get home!</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADVENTURE PAGE -->
+    <div id="page-adventure" class="page">
+      <div class="tab-bar">
+        <div class="tab active" onclick="switchAdv(this,'space')">🚀 Space</div>
+        <div class="tab" onclick="switchAdv(this,'silk')">🗺️ Silk Road</div>
+        <div class="tab" onclick="switchAdv(this,'sea')">⛵ Sea Road</div>
+        <div class="tab" onclick="switchAdv(this,'quest')">⚔️ Quest</div>
+      </div>
+
+      <div id="adv-space" class="adventure-card">
+        <div class="adv-title">🚀 Cosmic Travel</div>
+        <div class="adv-loc" id="adv-space-loc">On the launchpad 🌍</div>
+        <div class="adv-progress"><div class="adv-fill" id="adv-space-fill" style="width:0%"></div></div>
+        <div class="adv-steps" id="adv-space-steps">Walk 500 steps to break orbit</div>
+      </div>
+
+      <div id="adv-silk" class="adventure-card" style="display:none">
+        <div class="adv-title">🗺️ Silk Road</div>
+        <div class="adv-loc" id="adv-silk-loc">Xi'an, China 🏯</div>
+        <div class="adv-progress"><div class="adv-fill" id="adv-silk-fill" style="width:0%"></div></div>
+        <div class="adv-steps" id="adv-silk-steps">Start walking the ancient route</div>
+      </div>
+
+      <div id="adv-sea" class="adventure-card" style="display:none">
+        <div class="adv-title">⛵ Sea Road</div>
+        <div class="adv-loc" id="adv-sea-loc">Guangzhou, China ⚓</div>
+        <div class="adv-progress"><div class="adv-fill" id="adv-sea-fill" style="width:0%"></div></div>
+        <div class="adv-steps" id="adv-sea-steps">Set sail along the maritime trade route</div>
+      </div>
+
+      <div id="adv-quest" class="adventure-card" style="display:none">
+        <div class="adv-title">⚔️ Adventure Quest</div>
+        <div class="adv-loc" id="adv-quest-loc">Choose a world 🌍</div>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap" id="quest-worlds">
+          <button onclick="startQuest('forest')" style="flex:1;padding:10px;background:rgba(255,255,255,0.1);border:none;border-radius:10px;color:#fff;font-size:13px;cursor:pointer">🌲 Forest</button>
+          <button onclick="startQuest('ocean')" style="flex:1;padding:10px;background:rgba(255,255,255,0.1);border:none;border-radius:10px;color:#fff;font-size:13px;cursor:pointer">🌊 Ocean</button>
+          <button onclick="startQuest('mountain')" style="flex:1;padding:10px;background:rgba(255,255,255,0.1);border:none;border-radius:10px;color:#fff;font-size:13px;cursor:pointer">🏔️ Mountain</button>
+        </div>
+        <div id="quest-battle" style="display:none;margin-top:12px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+            <div style="text-align:center">
+              <div style="font-size:28px">🐶</div>
+              <div id="puppy-hp-bar" style="width:60px;height:6px;background:rgba(255,255,255,0.2);border-radius:3px;margin-top:4px">
+                <div id="puppy-hp-fill" style="height:100%;background:#4CAF50;border-radius:3px;width:100%"></div>
+              </div>
+              <div id="puppy-hp" style="font-size:11px;opacity:0.7;margin-top:2px">20/20 HP</div>
+            </div>
+            <div style="align-self:center;font-size:20px">⚔️</div>
+            <div style="text-align:center" id="enemy-display">
+              <div id="enemy-emoji" style="font-size:28px">❓</div>
+              <div id="enemy-hp-bar" style="width:60px;height:6px;background:rgba(255,255,255,0.2);border-radius:3px;margin-top:4px">
+                <div id="enemy-hp-fill" style="height:100%;background:#f44336;border-radius:3px;width:100%"></div>
+              </div>
+              <div id="enemy-hp" style="font-size:11px;opacity:0.7;margin-top:2px">? HP</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button onclick="questAction('fight')" style="flex:1;padding:9px 6px;background:rgba(255,255,255,0.15);border:none;border-radius:10px;color:#fff;font-size:12px;cursor:pointer">⚔️ Fight (2 AP)</button>
+            <button onclick="questAction('magic')" style="flex:1;padding:9px 6px;background:rgba(255,255,255,0.15);border:none;border-radius:10px;color:#fff;font-size:12px;cursor:pointer">✨ Magic (4 AP)</button>
+            <button onclick="questAction('heal')" style="flex:1;padding:9px 6px;background:rgba(255,255,255,0.15);border:none;border-radius:10px;color:#fff;font-size:12px;cursor:pointer">💊 Heal (3 AP)</button>
+            <button onclick="questAction('flee')" style="flex:1;padding:9px 6px;background:rgba(255,255,255,0.15);border:none;border-radius:10px;color:#fff;font-size:12px;cursor:pointer">🏃 Flee</button>
+          </div>
+          <div id="quest-ap" style="font-size:13px;margin-top:8px;opacity:0.8">⚡ 0 AP</div>
+        </div>
+      </div>
+
+      <div class="section-hd">Badges</div>
+      <div class="badges-grid" id="badges-grid"></div>
+    </div>
+
+    <!-- STATS PAGE -->
+    <div id="page-stats" class="page">
+      <div class="section-hd">All time</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 16px">
+        <div style="background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px;text-align:center">
+          <div style="font-size:28px;font-weight:800;color:var(--accent)" id="total-walks">0</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px">Total walks</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px;text-align:center">
+          <div style="font-size:28px;font-weight:800;color:var(--accent)" id="total-km">0.0</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px">Total km</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px;text-align:center">
+          <div style="font-size:28px;font-weight:800;color:var(--accent)" id="total-steps-all">0</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px">Total steps</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px;text-align:center">
+          <div style="font-size:28px;font-weight:800;color:var(--accent)" id="best-streak">0</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px">Best streak</div>
+        </div>
+      </div>
+
+      <div class="section-hd">Walk history</div>
+      <div id="walk-history">
+        <div style="text-align:center;padding:32px;color:var(--text2)">
+          No walks yet — let's go, Puppy! 🐾
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💾 Backup & Restore</div>
+        <div class="card-body" style="margin-bottom:12px">Copy your data to save or move to another device. Nothing leaves your device without your action.</div>
+        <div class="btn-row">
+          <button class="btn-secondary" onclick="backupData()">📤 Backup</button>
+          <button class="btn-secondary" onclick="restoreData()">📥 Restore</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div id="page-settings" class="page">
+      <div class="section-hd">Puppy</div>
+      <div class="card" style="padding:0">
+        <div class="setting-row">
+          <div class="setting-label">
+            Puppy's name
+            <div class="setting-sub" id="puppy-name-display">Mochi</div>
+          </div>
+          <button class="btn-secondary" style="width:auto;padding:8px 14px" onclick="renamePuppy()">Edit</button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            🌙 Night sleep mode
+            <div class="setting-sub">Puppy sleeps at night (8pm–6am), zzz only then</div>
+          </div>
+          <button class="toggle on" id="toggle-sleep" onclick="toggleSetting(this,'sleep')"></button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            🍂 Seasonal decorations
+            <div class="setting-sub">Spring flowers, autumn leaves, winter snow</div>
+          </div>
+          <button class="toggle on" id="toggle-season" onclick="toggleSetting(this,'season')"></button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            🔔 Daily walk reminder
+            <div class="setting-sub" id="reminder-time-display">Off</div>
+          </div>
+          <button class="toggle" id="toggle-reminder" onclick="toggleReminder()"></button>
+        </div>
+        <div class="setting-row" id="reminder-time-row" style="display:none">
+          <div class="setting-label">Remind me at</div>
+          <input type="time" id="reminder-time-input" value="08:00" style="border:1px solid var(--card-border);border-radius:8px;padding:6px 10px;font-size:14px" onchange="saveReminderTime()">
+        </div>
+      </div>
+
+      <div class="section-hd">Data & Privacy</div>
+      <div class="card" style="padding:0">
+        <div class="setting-row">
+          <div class="setting-label">
+            Step counting
+            <div class="setting-sub" id="step-method-label">Manual / Apple Health</div>
+          </div>
+          <button class="btn-secondary" style="width:auto;padding:8px 14px" onclick="showSyncOptions()">Change</button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            🔒 Privacy
+            <div class="setting-sub">All data on your device only. No account, no cloud.</div>
+          </div>
+          <span style="color:var(--success);font-size:13px;font-weight:600">Private ✓</span>
+        </div>
+      </div>
+
+      <div class="section-hd">Debug</div>
+      <div class="card" style="padding:0">
+        <div class="setting-row" style="cursor:pointer" onclick="toggleTestMode()">
+          <div class="setting-label">
+            🧪 Test mode
+            <div class="setting-sub">Simulate walks, test time of day</div>
+          </div>
+          <button class="toggle" id="toggle-test" onclick="event.stopPropagation();toggleTestMode()"></button>
+        </div>
+        <div class="setting-row" style="cursor:pointer" onclick="if(confirm('Reset all walk data?'))resetAll()">
+          <div class="setting-label btn-danger">
+            🗑️ Reset all data
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav id="bottom-nav">
+    <button class="nav-btn active" onclick="showPage('home',this)">
+      <span class="nav-icon">🏠</span>Home
+    </button>
+    <button class="nav-btn" onclick="showPage('adventure',this)">
+      <span class="nav-icon">🚀</span>Adventure
+    </button>
+    <button class="nav-btn" onclick="showPage('stats',this)">
+      <span class="nav-icon">📊</span>Stats
+    </button>
+    <button class="nav-btn" onclick="showPage('settings',this)">
+      <span class="nav-icon">⚙️</span>Settings
+    </button>
+  </nav>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-talk" onclick="if(event.target===this)closeModal('modal-talk')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💬 Talk to Puppy</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn-secondary" onclick="talkToPuppy('hi')">👋 Just say hi</button>
+      <button class="btn-secondary" onclick="talkToPuppy('walk')">🎉 Had a great walk!</button>
+      <button class="btn-secondary" onclick="talkToPuppy('miss')">🥰 Miss you, puppy</button>
+      <button class="btn-secondary" onclick="talkToPuppy('great')">✨ Feeling great today!</button>
+      <button class="btn-secondary" onclick="talkToPuppy('sleep')">😴 I'm going to sleep</button>
+      <button class="btn-secondary" onclick="talkToPuppy('busy')">🎯 I need to focus</button>
+      <button class="btn-secondary" onclick="closeModal('modal-talk')">Cancel</button>
+    </div>
   </div>
 </div>
 
-<!-- LOADING -->
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-ico">⚗️</div>
-  <div class="loading-txt" id="loadingTxt">Loading your journey...</div>
+<div class="modal-overlay" id="modal-mood" onclick="if(event.target===this)closeModal('modal-mood')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">How was the walk? 🐾</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px" id="mood-grid">
+      <button onclick="logMood('😊')" style="padding:16px;background:var(--card);border:2px solid var(--card-border);border-radius:var(--radius);font-size:28px;cursor:pointer">😊</button>
+      <button onclick="logMood('🌸')" style="padding:16px;background:var(--card);border:2px solid var(--card-border);border-radius:var(--radius);font-size:28px;cursor:pointer">🌸</button>
+      <button onclick="logMood('🔥')" style="padding:16px;background:var(--card);border:2px solid var(--card-border);border-radius:var(--radius);font-size:28px;cursor:pointer">🔥</button>
+      <button onclick="logMood('😌')" style="padding:16px;background:var(--card);border:2px solid var(--card-border);border-radius:var(--radius);font-size:28px;cursor:pointer">😌</button>
+      <button onclick="logMood('🌧️')" style="padding:16px;background:var(--card);border:2px solid var(--card-border);border-radius:var(--radius);font-size:28px;cursor:pointer">🌧️</button>
+      <button onclick="logMood('😴')" style="padding:16px;background:var(--card);border:2px solid var(--card-border);border-radius:var(--radius);font-size:28px;cursor:pointer">😴</button>
+    </div>
+    <button class="btn-secondary" onclick="closeModal('modal-mood')">Never mind</button>
+  </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- TEST PANEL -->
+<div id="test-panel">
+  <div class="test-title">🧪 Test Mode</div>
+  <div class="test-btns">
+    <button class="test-btn" onclick="addSteps(100)">+100</button>
+    <button class="test-btn" onclick="addSteps(500)">+500</button>
+    <button class="test-btn" onclick="addSteps(1000)">+1K</button>
+    <button class="test-btn" onclick="addSteps(5000)">+5K</button>
+    <button class="test-btn" onclick="forceTime(6)">☀️ Dawn</button>
+    <button class="test-btn" onclick="forceTime(9)">🌤 Morning</button>
+    <button class="test-btn" onclick="forceTime(14)">☀️ Afternoon</button>
+    <button class="test-btn" onclick="forceTime(18)">🌅 Evening</button>
+    <button class="test-btn" onclick="forceTime(21)">🌙 Night</button>
+    <button class="test-btn" onclick="forceTime(null)">🕐 Real time</button>
+    <button class="test-btn" onclick="simulateWalk()">🚶 Simulate walk</button>
+    <button class="test-btn" onclick="document.getElementById('test-panel').classList.remove('open')">✕ Close</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
 
 <script>
-(function(){
-
-// ═══════════════════════════════════════════
-// WORLDS & AREAS DATA
-// ═══════════════════════════════════════════
-const WORLDS = {
-  japan:{name:"⛩️ Feudal Japan",period:"794–1868 AD",icon:"⛩️",color:"#c0392b",
-    areas:[
-      {id:"edo",name:"Edo (Tokyo)",icon:"🏯",desc:"The great capital city"},
-      {id:"kyoto",name:"Kyoto Temples",icon:"⛩️",desc:"Ancient shrines and gardens"},
-      {id:"fuji",name:"Mount Fuji",icon:"🗻",desc:"Sacred volcanic peak"},
-      {id:"forest",name:"Bamboo Forest",icon:"🎋",desc:"Mystical groves of Arashiyama"},
-      {id:"coast",name:"Seto Sea Coast",icon:"🌊",desc:"Island-dotted inland sea"}
-    ]},
-  greece:{name:"🏛️ Ancient Greece",period:"800–146 BC",icon:"🏛️",color:"#2980b9",
-    areas:[
-      {id:"athens",name:"Athens",icon:"🏛️",desc:"City of wisdom and democracy"},
-      {id:"olympus",name:"Mount Olympus",icon:"⛰️",desc:"Home of the gods"},
-      {id:"delphi",name:"Delphi",icon:"🔮",desc:"Oracle of Apollo"},
-      {id:"aegean",name:"Aegean Sea",icon:"🌊",desc:"Island-strewn mythic waters"},
-      {id:"troy",name:"Troy",icon:"⚔️",desc:"City of the great war"}
-    ]},
-  rome:{name:"🦅 Ancient Rome",period:"753 BC–476 AD",icon:"🦅",color:"#8e44ad",
-    areas:[
-      {id:"forum",name:"Roman Forum",icon:"🏛️",desc:"Heart of the republic"},
-      {id:"colosseum",name:"Colosseum",icon:"🏟️",desc:"Arena of gladiators"},
-      {id:"pantheon",name:"Pantheon",icon:"🔵",desc:"Temple of all gods"},
-      {id:"roads",name:"Via Appia",icon:"🛣️",desc:"The great Roman road"},
-      {id:"carthage",name:"Carthage",icon:"⚓",desc:"Rival city across the sea"}
-    ]},
-  norse:{name:"⚡ Norse Vikings",period:"793–1066 AD",icon:"⚡",color:"#2c3e50",
-    areas:[
-      {id:"midgard",name:"Midgard",icon:"🌍",desc:"The world of humans"},
-      {id:"valhalla",name:"Valhalla",icon:"🛡️",desc:"Hall of slain warriors"},
-      {id:"yggdrasil",name:"Yggdrasil",icon:"🌳",desc:"The world tree"},
-      {id:"iceland",name:"Iceland Shores",icon:"🧊",desc:"Land of ice and fire"},
-      {id:"sea",name:"Norse Sea",icon:"⚓",desc:"Dragon-ship waters"}
-    ]},
-  egypt:{name:"𓂀 Ancient Egypt",period:"3100–30 BC",icon:"𓂀",color:"#e67e22",
-    areas:[
-      {id:"pyramid",name:"Great Pyramid",icon:"🔺",desc:"Wonder of the ancient world"},
-      {id:"nile",name:"Nile Delta",icon:"🌊",desc:"River that feeds all life"},
-      {id:"valley",name:"Valley of Kings",icon:"⚰️",desc:"Tombs of the pharaohs"},
-      {id:"alexandria",name:"Alexandria",icon:"📚",desc:"City of knowledge"},
-      {id:"temple",name:"Temple of Ra",icon:"☀️",desc:"Sacred solar temple"}
-    ]},
-  celtic:{name:"🍀 Celtic Myths",period:"500 BC–400 AD",icon:"🍀",color:"#16a085",
-    areas:[
-      {id:"grove",name:"Sacred Oak Grove",icon:"🌳",desc:"Where druids commune"},
-      {id:"stonehenge",name:"Stone Circle",icon:"🪨",desc:"Ancient celestial calendar"},
-      {id:"avalon",name:"Isle of Avalon",icon:"🌫️",desc:"Mystical island of Arthur"},
-      {id:"highlands",name:"Highland Moors",icon:"🌿",desc:"Wild and windswept lands"},
-      {id:"tara",name:"Hill of Tara",icon:"👑",desc:"Seat of the High Kings"}
-    ]},
-  china:{name:"🐉 Ancient China",period:"221 BC–618 AD",icon:"🐉",color:"#e74c3c",
-    areas:[
-      {id:"palace",name:"Imperial Palace",icon:"🏯",desc:"Heart of the celestial empire"},
-      {id:"wall",name:"Great Wall",icon:"🧱",desc:"Barrier against the north"},
-      {id:"silkroad",name:"Silk Road",icon:"🐪",desc:"Trade route of wonders"},
-      {id:"yangtze",name:"Yangtze River",icon:"🌊",desc:"Dragon river of the south"},
-      {id:"terracotta",name:"Terracotta Army",icon:"⚔️",desc:"Army of the first emperor"}
-    ]},
-  aztec:{name:"🦅 Aztec Empire",period:"1300–1521 AD",icon:"🌞",color:"#d35400",
-    areas:[
-      {id:"tenochtitlan",name:"Tenochtitlan",icon:"🏙️",desc:"Island city on the lake"},
-      {id:"pyramid_sun",name:"Pyramid of the Sun",icon:"☀️",desc:"Sacred solar monument"},
-      {id:"cenote",name:"Sacred Cenote",icon:"💧",desc:"Portal to the underworld"},
-      {id:"market",name:"Tlatelolco Market",icon:"🏪",desc:"Greatest market of the world"},
-      {id:"jungle_a",name:"Jungle Temple",icon:"🌿",desc:"Hidden shrine in the forest"}
-    ]},
-  inca:{name:"☀️ Inca Empire",period:"1438–1533 AD",icon:"🏔️",color:"#f39c12",
-    areas:[
-      {id:"machu",name:"Machu Picchu",icon:"🏔️",desc:"Lost city in the clouds"},
-      {id:"cusco",name:"Cusco",icon:"🌄",desc:"The golden city"},
-      {id:"titicaca",name:"Lake Titicaca",icon:"🌊",desc:"Sacred lake of the sun"},
-      {id:"inca_road",name:"Royal Road",icon:"🛤️",desc:"24,000km empire highway"},
-      {id:"condor_peak",name:"Condor Peak",icon:"🦅",desc:"Where condors soar"}
-    ]},
-  maya:{name:"🌿 Maya Civilization",period:"2000 BC–1500 AD",icon:"🌿",color:"#1abc9c",
-    areas:[
-      {id:"chichen",name:"Chichen Itza",icon:"🔺",desc:"Temple of Kukulkan"},
-      {id:"tikal",name:"Tikal Jungle",icon:"🌴",desc:"City hidden in the forest"},
-      {id:"observatory",name:"Observatory",icon:"🔭",desc:"Where stars were mapped"},
-      {id:"cenote_m",name:"Sacred Cenote",icon:"💧",desc:"Jade green water portal"},
-      {id:"palenque",name:"Palenque",icon:"🌺",desc:"Palace of the rulers"}
-    ]},
-  india:{name:"🐘 Ancient India",period:"1500–200 BC",icon:"🐘",color:"#e91e63",
-    areas:[
-      {id:"ganges",name:"Ganges River",icon:"🌊",desc:"Sacred river of life"},
-      {id:"himalaya",name:"Himalayas",icon:"🏔️",desc:"Roof of the world"},
-      {id:"ayodhya",name:"Ayodhya",icon:"🏯",desc:"City of the Ramayana"},
-      {id:"indus",name:"Indus Valley",icon:"🌾",desc:"Cradle of civilization"},
-      {id:"bodhi",name:"Bodhi Tree",icon:"🌳",desc:"Place of enlightenment"}
-    ]},
-  mesopotamia:{name:"🌙 Mesopotamia",period:"3500–539 BC",icon:"🌙",color:"#795548",
-    areas:[
-      {id:"babylon",name:"Babylon",icon:"🏛️",desc:"Greatest city of the ancient world"},
-      {id:"ziggurat",name:"Ziggurat",icon:"🔺",desc:"Tower reaching to heaven"},
-      {id:"euphrates",name:"Euphrates River",icon:"🌊",desc:"River of civilization"},
-      {id:"ur",name:"City of Ur",icon:"🌙",desc:"City of the moon god"},
-      {id:"babel",name:"Tower of Babel",icon:"🗼",desc:"Where languages divided"}
-    ]},
-  arabian:{name:"☪️ Arabian Nights",period:"8th–13th Century",icon:"🌙",color:"#9b59b6",
-    areas:[
-      {id:"baghdad",name:"Baghdad",icon:"🕌",desc:"City of a thousand tales"},
-      {id:"cave",name:"Cave of Wonders",icon:"✨",desc:"Where Aladdin found his lamp"},
-      {id:"oasis",name:"Desert Oasis",icon:"🌴",desc:"Haven in the endless sand"},
-      {id:"harbor",name:"Sinbad's Harbor",icon:"⚓",desc:"Port of legendary voyages"},
-      {id:"palace_a",name:"Magic Palace",icon:"🏰",desc:"Home of the sultan"}
-    ]},
-  mali:{name:"👑 Mali Empire",period:"1235–1600 AD",icon:"👑",color:"#ff9800",
-    areas:[
-      {id:"timbuktu",name:"Timbuktu",icon:"📚",desc:"City of gold and learning"},
-      {id:"niger",name:"Niger River",icon:"🌊",desc:"Lifeblood of the empire"},
-      {id:"salt_mine",name:"Salt Mines",icon:"⬜",desc:"More precious than gold"},
-      {id:"mosque",name:"Djenne Mosque",icon:"🕌",desc:"Greatest mud-brick building"},
-      {id:"savanna",name:"Lion Savanna",icon:"🦁",desc:"Land of the griot stories"}
-    ]},
-  polynesia:{name:"🌺 Polynesian Myths",period:"Ancient–1000 AD",icon:"🌊",color:"#00bcd4",
-    areas:[
-      {id:"hawaii",name:"Hawaii",icon:"🌺",desc:"Islands of fire and flower"},
-      {id:"open_ocean",name:"Open Ocean",icon:"🌊",desc:"Boundless wayfinding sea"},
-      {id:"marae",name:"Sacred Marae",icon:"🗿",desc:"Temple of the ancestors"},
-      {id:"volcano",name:"Volcanic Island",icon:"🌋",desc:"Where Pele dances"},
-      {id:"star_point",name:"Star Navigation",icon:"⭐",desc:"Reading the sky to sail"}
-    ]},
-  persia:{name:"🏔️ Persian Empire",period:"550–331 BC",icon:"🌟",color:"#9c27b0",
-    areas:[
-      {id:"persepolis",name:"Persepolis",icon:"🏛️",desc:"Palace of all nations"},
-      {id:"silk_p",name:"Silk Road Bazaar",icon:"🐪",desc:"Where east meets west"},
-      {id:"fire_temple",name:"Fire Temple",icon:"🔥",desc:"Eternal flame of Zoroaster"},
-      {id:"alborz",name:"Alborz Mountains",icon:"🏔️",desc:"Where Simurgh nests"},
-      {id:"babylon_p",name:"Babylon Gate",icon:"🦁",desc:"Lion-guarded entrance"}
-    ]},
-  slavic:{name:"🧙 Slavic Myths",period:"Pre-Christian Era",icon:"❄️",color:"#607d8b",
-    areas:[
-      {id:"kiev",name:"Kiev",icon:"🏯",desc:"Ancient city of the Slavs"},
-      {id:"enchanted_forest",name:"Enchanted Forest",icon:"🌲",desc:"Where Leshy dwells"},
-      {id:"baba_hut",name:"Baba Yaga's Hut",icon:"🏚️",desc:"The hut on chicken legs"},
-      {id:"firebird_nest",name:"Firebird Nest",icon:"🔥",desc:"Rare and magical bird"},
-      {id:"zmey_cave",name:"Zmey's Cave",icon:"🐍",desc:"Dragon's dark lair"}
-    ]},
-  arthur:{name:"🏰 King Arthur",period:"5th–6th Century AD",icon:"🏰",color:"#27ae60",
-    areas:[
-      {id:"camelot",name:"Camelot",icon:"🏰",desc:"Home of the Round Table"},
-      {id:"merlin_tower",name:"Merlin's Tower",icon:"🔮",desc:"Where magic is learned"},
-      {id:"enchanted_f",name:"Enchanted Forest",icon:"🌲",desc:"Realm of fairy and quest"},
-      {id:"lake_avalon",name:"Lake Avalon",icon:"🌊",desc:"Where Excalibur sleeps"},
-      {id:"grail",name:"Grail Castle",icon:"✨",desc:"Quest's sacred destination"}
-    ]}
+// ════════════════════════════════
+// STATE
+// ════════════════════════════════
+const S = {
+  steps: 0,
+  totalSteps: 0,
+  distKm: 0,
+  streak: 0,
+  bestStreak: 0,
+  walkMinutes: 0,
+  walks: [],
+  walking: false,
+  walkStart: null,
+  walkInterval: null,
+  settings: {sleep:true,season:true,reminder:false,reminderTime:'08:00'},
+  puppyName: 'Mochi',
+  forcedHour: null,
+  syncMethod: 'shortcuts',
+  questState: {active:false,world:null,puppyHp:20,enemyHp:0,ap:0,apBaseline:0},
+  lastBadgeCheck: 0,
+  motionEnabled: false,
+  stepSinceLastPaw: 0,
 };
 
-// Sample encounters (abbreviated for length — extend as needed)
-const ENCOUNTERS = [
-  {id:"j_edo",world:"japan",area:"edo",char:"Kitsune Fox Spirit",charEmoji:"🦊",rare:false,
-   title:"The Fox Who Becomes Human",
-   aha:{teaser:"Did you know? 🦊 Kitsune fox spirits can shapeshift into humans — and Japanese people believed this for over 1,000 years.",fact:"Kitsune are magical foxes gaining wisdom with each tail (up to nine). Over 30,000 Inari shrines across Japan are guarded by fox statues — more than any other shrine type.",more:"Even today, businesspeople visit Inari shrines for prosperity. The Fushimi Inari shrine in Kyoto has thousands of fox statues lining walkable mountain paths — you can visit them right now."},
-   story:{scene:"The kitsune pauses on the path, amber eyes watching you. It flicks one of its three tails — young, but clever. 'Traveller,' it says, 'do you know why foxes guard shrines?'",fact:"Inari, the Shinto god of rice and prosperity, uses foxes as messengers. 30,000+ Inari shrines exist in Japan — the most common type of shrine in the country."},
-   conv:{speech:"I have guarded this path for 300 years. Humans pass, always in a hurry. Why do you walk today?",choices:["To explore and discover","For my health","I just enjoy walking"],responses:["Wise. The Kitsune who walked the Tokaido road learned something new each day — that's how we earn our tails.","Your health is your wealth. The samurai knew this — they walked 10,000 steps daily as meditation.","Then you walk like a pilgrim on the Kumano Kodo — that ancient trail is still walked today, exactly as 1,000 years ago."]},
-   detail:`<p>The kitsune (狐) is one of Japan's most enduring supernatural figures — an intelligent fox with magical abilities that grow with age.</p><div class="detail-highlight">A kitsune gains one tail for every 100 years of life, up to nine. A nine-tailed fox can see and hear anything in the world.</div><p>Inari shrines with fox statues are the most numerous shrine type in Japan — over 32,000 locations. The famous Fushimi Inari in Kyoto has thousands lining mountain paths you can walk today.</p><div class="detail-source">Sources: Smyers (1999), Fushimi Inari Taisha records.</div>`},
-
-  {id:"j_fuji",world:"japan",area:"fuji",char:"Mountain Kami",charEmoji:"🌸",rare:true,
-   title:"Japan's Sacred Mountain Has Its Own Personality",
-   aha:{teaser:"AHA! Mount Fuji is considered a living deity (kami) in Shinto — and until 1868, women were completely forbidden from climbing it.",fact:"Fujisan has been worshipped for over 1,200 years. It's been painted, written about, and climbed by millions — but it only became fully open to everyone in the Meiji era.",more:"Today, 300,000 people climb Fuji every year. It's a UNESCO World Heritage Site — but as a 'Cultural Site,' not a natural one, because its spiritual significance to Japanese culture was considered more important than its geology."},
-   story:{scene:"The kami of Fuji appears as a shimmer in the cloud line — ancient, patient, barely noticing the small figures climbing her slopes. 'They come and go,' she says, 'generation after generation. I was sacred before any of them were born. I will be sacred long after.'",fact:"Mount Fuji last erupted in 1707. Ash fell on Edo (Tokyo) for two weeks. Geologists consider it an active volcano — another eruption is possible."},
-   conv:{speech:"Three hundred thousand humans climb my slopes every year now. What do you think they are searching for?",choices:["A physical challenge","A spiritual experience","Something to photograph"],responses:["Many come for the challenge, yes. But at the summit, something changes. The Japanese concept of 'yōhai' — worshipping from a distance — suggests that the mountain is most powerful when you can see it, not when you stand on it.","Yes. The Japanese say 'He who climbs Fuji once is wise. He who climbs twice is a fool.' The wisdom is in the single, complete experience — not repetition.","And in doing so, they continue a tradition of artistic attention to Fuji stretching back 1,000 years. Hokusai's 36 Views of Fuji made the mountain famous worldwide. Every photograph is part of that unbroken tradition."]},
-   detail:`<p>Mount Fuji (3,776m) is Japan's highest peak and one of its most sacred sites — worshipped as a kami (deity) for over 1,200 years.</p><div class="detail-highlight">Women were forbidden from climbing Fuji until 1868 — the mountain was considered too sacred. The first recorded ascent was by a Buddhist monk in 663 AD.</div><p>Fuji is a UNESCO World Heritage Cultural Site — recognized not for its geology but for its profound influence on Japanese art, religion, and identity across 1,000+ years.</p><div class="detail-source">Sources: UNESCO World Heritage listing, Japan National Tourism Organization.</div>`},
-
-  {id:"g_athens",world:"greece",area:"athens",char:"Athena",charEmoji:"🦉",rare:false,
-   title:"The Word You're Using Right Now",
-   aha:{teaser:"Did you know? Almost every long English word in science, medicine, or law comes directly from ancient Greek — a language no one has spoken natively for 2,000 years.",fact:"Democracy, biology, psychology, telephone, photograph, astronaut — all Greek roots. Even 'alphabet' comes from Greek letters Alpha and Beta.",more:"Greek is the only ancient language still actively generating new English words. When scientists name a new species today, they use Greek roots. You used at least one Greek-derived word in the last ten minutes."},
-   story:{scene:"Athena stands at the crossroads, owl perched on her shoulder. 'You carry my language in your mouth,' she says, 'every time you speak of science, democracy, or music. Did you know that?'",fact:"The word 'music' comes from the Muses — nine Greek goddesses of the arts. Every time you say 'music,' you're invoking them."},
-   conv:{speech:"You study the world with logic and evidence — exactly as my city invented 2,500 years ago. What do you think Athens gave the modern world?",choices:["Democracy and voting","Science and philosophy","Theatre and storytelling"],responses:["The actual voting tokens from Athens still exist — small bronze discs real Athenian citizens held to cast votes, 2,500 years ago. You can see them in the Ancient Agora Museum today.","The Socratic method — asking questions until truth emerges — is still taught in law schools. Aristotle's logical framework underlies all Western scientific reasoning.","The Theatre of Dionysus in Athens held 17,000 people, 2,500 years ago. Every modern theatre, cinema, and stage descends from its design — semicircular seats, raised stage, backstage area ('skene,' which gives us 'scene')."]},
-   detail:`<p>Ancient Greek has a unique relationship with English — the only truly dead language that continues to actively generate new scientific and technical words.</p><div class="detail-highlight">When NASA needed a word for a moon-walker in 1969, they used Greek: "astronaut" = astron (star) + nautes (sailor). When biologists discover a new species, they name it in Greek or Latin. The ancient language never stopped working.</div><p>Athena was patron of Athens — named after her. The Parthenon, her temple on the Acropolis, stands 2,500 years later and remains one of the most visited sites on Earth.</p><div class="detail-source">Sources: Ayers (1986), Oxford Dictionary of Word Origins.</div>`},
-
-  {id:"e_pyramid",world:"egypt",area:"pyramid",char:"Pharaoh's Scribe",charEmoji:"📜",rare:false,
-   title:"The Pyramid Builders Were Not Slaves",
-   aha:{teaser:"Did you know? For centuries we believed slaves built the pyramids. DNA, skeletal, and archaeological evidence now proves the builders were paid skilled workers.",fact:"Excavations near Giza found a workers' village with bakeries, breweries, medical facilities, and cemeteries. Healed fractures show these were valued workers receiving care — not slaves left to die.",more:"Graffiti found on pyramid blocks includes worker team names like 'Friends of Khufu.' Workers received wages in bread, beer, and cloth. Modern archaeology completely overturned Herodotus's account — and Hollywood's version."},
-   story:{scene:"The scribe sits in the shade, noting rations for tomorrow's workers. He looks up, unsurprised by your presence. 'People always ask how the pyramids were built,' he says. 'They forget to ask who. Farmers from the Nile flood season. Skilled stone masons. Men proud of their work.' He shows you the scroll.",fact:"The Great Pyramid of Giza contains approximately 2.3 million stone blocks averaging 2.5 tonnes each. Modern engineers estimate 20,000-30,000 workers built it over 20 years."},
-   conv:{speech:"Everyone asks how we moved the stones. Nobody asks what the workers ate for breakfast. Do you want to know?",choices:["Yes — what did they eat?","How were workers organized?","Why did they build pyramids at all?"],responses:["Beef, bread, and beer. The excavated workers' bakeries could produce 10 loaves of bread per person daily. Beer was about 4-5 litres per person. These were not starving slaves — they were well-fed skilled workers. We found the accounting records.","Into named teams that competed with each other. 'Friends of Khufu' versus 'Drunkards of Menkaure' — we found their graffiti. They had pride in their work. Shift rotations, medical care, dedicated cemeteries for those who died in accidents.","The Pharaoh was a god walking on earth — building his tomb was building the gateway between worlds. But also: it was Egypt's greatest public works programme, employing thousands during the Nile flood season when farming was impossible. Economics and theology, combined."]},
-   detail:`<p>The slave-built pyramid myth originates with Herodotus (5th century BC) — who visited Egypt 2,000 years after the pyramids were built and relied on local legends.</p><div class="detail-highlight">Excavations by Zahi Hawass and Mark Lehner since the 1990s found a complete workers' village near Giza — with bakeries, breweries, medical facilities showing healed injuries, and cemeteries with respectful burials.</div><p>A 2024 study in Communications Earth & Environment discovered a long-lost 64km branch of the Nile that once flowed past the pyramid sites — explaining how massive stone blocks were transported by boat to locations that are now deep desert.</p><div class="detail-source">Sources: Lehner (1997), Hawass excavations, Ghoneim et al. (2024).</div>`},
-
-  {id:"n_midgard",world:"norse",area:"midgard",char:"Odin the Allfather",charEmoji:"👁️",rare:false,
-   title:"You Say His Name Every Wednesday",
-   aha:{teaser:"Did you know? Wednesday is literally 'Woden's Day' — named after Odin. You say the names of Norse gods at least four times every week.",fact:"Tuesday = Tyr, Wednesday = Woden/Odin, Thursday = Thor, Friday = Frigg. Four days, four Norse deities — hiding in plain sight in modern English.",more:"Compare to Spanish: martes (Mars), miércoles (Mercury), jueves (Jupiter), viernes (Venus) — same days, Roman gods instead. Two mythologies surviving side by side in European languages today."},
-   story:{scene:"Odin sits at the base of Yggdrasil, one eye open, one empty. Two ravens land on his shoulders — Thought and Memory. 'You've been saying my name all week,' he says. 'Did you know?'",fact:"Odin sacrificed his eye to gain wisdom, then hung from Yggdrasil for nine days to discover the runes — two self-inflicted ordeals for the sake of knowledge."},
-   conv:{speech:"I gave up an eye for wisdom. I hung from the world tree for nine days for knowledge. What have you sacrificed to learn something true?",choices:["Time and effort studying","Nothing yet","I'm not sure wisdom requires sacrifice"],responses:["Then you understand. Every walk is a small version of hanging from the tree — investing discomfort now for understanding later.","Then you are at the beginning, which is the best place to be. Huginn and Muninn fly out each morning and return to tell me everything. This journal is your raven.","Perhaps. But I notice that things that come easily are remembered lightly. What do you remember perfectly? I suspect something that cost you something."]},
-   detail:`<p>The weekday names in English are a direct fossil of pre-Christian Norse and Roman religion — surviving 1,000 years of Christianity completely intact.</p><div class="detail-highlight">Tuesday (Tyr), Wednesday (Woden/Odin), Thursday (Thor), Friday (Frigg) — four of seven days carry Norse deity names. The other three carry Roman names: Saturday (Saturn), Sunday (Sol), Monday (Moon).</div><p>English and Spanish show the two traditions side by side: English Wednesday vs Spanish miércoles (Mercury's day). The linguistic boundary between Roman and Germanic influence is frozen in the names of the days.</p><div class="detail-source">Sources: Oxford English Dictionary etymology, Simek (1993).</div>`},
-
-  {id:"rome_forum",world:"rome",area:"forum",char:"Julius Caesar",charEmoji:"🦅",rare:false,
-   title:"You Checked Caesar's Calendar This Morning",
-   aha:{teaser:"Did you know? The calendar on your phone was literally designed by Julius Caesar in 45 BC. July is named after him. You use his invention every single day.",fact:"The Julian Calendar introduced months of set lengths and a leap year every 4 years. The Gregorian calendar is just a small precision correction made in 1582.",more:"September through December literally mean 7th through 10th month — they're now 9th through 12th because Romans added January and February later. You see this counting error every time you look at a calendar."},
-   story:{scene:"Caesar stands atop the Forum, looking over the city. 'My greatest conquest was not Gaul,' he says quietly. 'It was time itself. I organized the calendar so everyone in the empire knew what day it was. That,' he pauses, 'is still running.'",fact:"Before the Julian Calendar, the Roman calendar was so disorganized that Caesar had to add 90 extra days to fix it. The year 46 BC had 445 days. Romans called it 'the year of confusion.'"},
-   conv:{speech:"You have my calendar in your pocket right now. How does it feel to carry something 2,000 years old without knowing it?",choices:["Strange — I never thought about it","What else from Rome do I still use?","Why did the calendar get so confused?"],responses:["Most of civilization is like that — ancient foundations under modern surfaces. Your alphabet, legal rights, plumbing, calendar. You walk on Roman roads every day without seeing them.","Straight paved roads with drainage. Poured concrete (the Pantheon dome, unreinforced, has stood 2,000 years). The twelve-month calendar. Even the first daily public news bulletin — Julius Caesar invented it, posted in the Forum.","Roman priests controlled the calendar for political purposes — adding or removing days to extend their terms. Caesar, as dictator, had the power to fix it permanently — and did."]},
-   detail:`<p>The Julian Calendar (45 BC) is one of history's most enduring inventions — direct ancestor of the Gregorian calendar used worldwide today.</p><div class="detail-highlight">The Gregorian reform of 1582 only adjusted the leap year rule slightly. Caesar's core design — 365 days, 12 months, leap year every 4 years — was essentially correct for 1,600 years.</div><p>Month names tell the story: July honors Julius Caesar, August honors Augustus. September through December preserve the ghost of the older 10-month calendar — numerical names now misaligned by two, forever.</p><div class="detail-source">Sources: Richards (1998) "Mapping Time."</div>`},
-
-  {id:"china_wall",world:"china",area:"wall",char:"Jade Emperor",charEmoji:"👑",rare:false,
-   title:"Your Phone's Compass Was First a Fortune-Telling Tool",
-   aha:{teaser:"Did you know? The magnetic compass — in your phone right now — was invented in China around 200 BC, but its first use was not navigation. It was feng shui.",fact:"The earliest Chinese compasses were polished lodestone spoons on bronze plates — used by geomancers to find auspicious directions for buildings, not by sailors.",more:"For 1,000 years the compass was purely a divination tool. Only around 1040 AD did Chinese sailors adopt it for navigation. Columbus used a compass in 1492 — it had been a fortune-telling tool for 1,200 years first."},
-   story:{scene:"The Jade Emperor gestures to a bronze plate with a lodestone spoon resting on it, pointing south. 'Before your sailors used this,' he says, 'our priests used it to find where heaven's energy flowed through the earth. Is that so different from finding where you are?'",fact:"The Chinese term for compass is 指南针 (zhǐnán zhēn) — 'south-pointing needle.' Ancient Chinese compasses pointed south, not north. The convention of pointing north came through Arab and European use."},
-   conv:{speech:"For 1,000 years I guided fortune-tellers, not sailors. Who do you think used it better?",choices:["Sailors — they needed it more","Fortune-tellers — they found it first","Both — different kinds of navigation"],responses:["Perhaps. But without 1,000 years of fortune-tellers refining the lodestone — making it smaller, more accurate, water-mounted — the sailors would have had nothing to borrow.","And they developed extraordinary precision during those 1,000 years. Columbus's compass was the product of 1,200 years of continuous refinement, most of it for purposes he'd have called superstition.","Exactly. The compass navigates physical space and conceptual space. 'Which direction brings harmony to this house?' and 'Which direction is home?' are both asking: where am I in relation to what matters?"]},
-   detail:`<p>The magnetic compass's journey from fortune-telling to navigation is history's most striking example of curiosity-driven knowledge becoming practical technology — with a 1,200-year delay.</p><div class="detail-highlight">The earliest written description of a navigation compass dates to 1088 AD in China. Lodestone compasses had already existed for over 1,000 years as divination tools by then.</div><p>The compass reached Europe via Arab traders around 1190 AD. Within 300 years it enabled Columbus, da Gama, and Magellan — all tracing back to a Chinese fortune-teller's polished spoon.</p><div class="detail-source">Sources: Needham (1962), Temple (1986).</div>`}
+const BADGES = [
+  {id:'first',icon:'🐾',name:'First steps',req:1,check:()=>S.totalSteps>=1},
+  {id:'century',icon:'💯',name:'100 steps',req:100,check:()=>S.totalSteps>=100},
+  {id:'thousand',icon:'🌟',name:'1K steps',req:1000,check:()=>S.totalSteps>=1000},
+  {id:'fivek',icon:'🏅',name:'5K steps',req:5000,check:()=>S.totalSteps>=5000},
+  {id:'tenk',icon:'🏆',name:'10K steps',req:10000,check:()=>S.totalSteps>=10000},
+  {id:'streak3',icon:'🔥',name:'3 day streak',req:3,check:()=>S.streak>=3},
+  {id:'streak7',icon:'⚡',name:'7 day streak',req:7,check:()=>S.streak>=7},
+  {id:'walks5',icon:'🚶',name:'5 walks',req:5,check:()=>S.walks.length>=5},
+  {id:'talks',icon:'💬',name:'Talked to puppy',req:1,check:()=>S.talked},
+  {id:'km1',icon:'📍',name:'1 km total',req:1,check:()=>S.distKm>=1},
 ];
 
-// ═══════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════
-// Master data — loaded from Worker, saved to Worker
-let MASTER = {
-  journal: [],     // saved encounter entries
-  notes: {},       // {encId: {stars, text}}
-  explored: {      // {worldId: {areaId: {visitCount, firstDate, lastDate}}}
-    areas: {},
-    worlds: {}
+const SILK_ROAD = [
+  {name:"Xi'an, China 🏯",steps:0},
+  {name:"Dunhuang, China 🏜️",steps:2000},
+  {name:"Kashgar, China 🕌",steps:5000},
+  {name:"Samarkand, Uzbekistan 💎",steps:10000},
+  {name:"Merv, Turkmenistan 🏛️",steps:15000},
+  {name:"Tehran, Iran 🌹",steps:22000},
+  {name:"Baghdad, Iraq 📜",steps:30000},
+  {name:"Constantinople 👑",steps:40000},
+  {name:"Venice, Italy ⚓",steps:50000},
+];
+
+const SEA_ROAD = [
+  {name:"Guangzhou, China ⚓",steps:0},
+  {name:"South China Sea 🌊",steps:3000},
+  {name:"Malacca, Malaysia 🛶",steps:8000},
+  {name:"Colombo, Sri Lanka 🐚",steps:16000},
+  {name:"Calicut, India 🌴",steps:24000},
+  {name:"Hormuz, Persian Gulf 🏝️",steps:34000},
+  {name:"Aden, Yemen 🕯️",steps:45000},
+  {name:"Mogadishu, Somalia 🦒",steps:58000},
+  {name:"Alexandria, Egypt 🏛️",steps:75000},
+];
+
+const SPACE_STOPS = [
+  {name:"On the launchpad 🌍",steps:0},
+  {name:"Breaking orbit 🚀",steps:500},
+  {name:"Moon landing 🌕",steps:2000},
+  {name:"Mars arrival 🔴",steps:10000},
+  {name:"Asteroid belt 🪨",steps:25000},
+  {name:"Jupiter flyby 🌀",steps:50000},
+  {name:"Saturn's rings 💍",steps:100000},
+  {name:"Interstellar space ✨",steps:200000},
+];
+
+const ENEMIES = {
+  forest:['🐺','🐗','🦊','🦝','🐻'],
+  ocean:['🦑','🦈','🐙','🦞','🐡'],
+  mountain:['🦅','🦌','🐺','🐻‍❄️','🦁'],
+};
+
+// ════════════════════════════════
+// TIME OF DAY
+// ════════════════════════════════
+function getHour(){return S.forcedHour !== null ? S.forcedHour : new Date().getHours();}
+
+function getTimeSlot(h){
+  if(h>=5&&h<7)  return 'dawn';
+  if(h>=7&&h<12) return 'morning';
+  if(h>=12&&h<17)return 'afternoon';
+  if(h>=17&&h<20)return 'evening';
+  if(h>=20||h<5) return 'night';
+  return 'morning';
+}
+
+const TIME_DATA = {
+  dawn:{
+    skyTop:'#FFB347',skyBot:'#FFD9B3',
+    groundCol:'#5a9929',groundDark:'#3d6e1a',
+    sunMoon:'🌅',sunPos:{top:'30px',right:'40px'},
+    label:'Dawn 🌅',
+    moodText:'Good morning! Time to stretch! 🌅',
+    puppyState:'excited',
+    starOpacity:0,
+    nightMode:false,
+  },
+  morning:{
+    skyTop:'#87CEEB',skyBot:'#E0F4FF',
+    groundCol:'#6db33f',groundDark:'#4a8c28',
+    sunMoon:'☀️',sunPos:{top:'20px',right:'40px'},
+    label:'Good morning ☀️',
+    moodText:'Ready for our walk! 🐾',
+    puppyState:'sit',
+    starOpacity:0,
+    nightMode:false,
+  },
+  afternoon:{
+    skyTop:'#60B0E8',skyBot:'#BDE8FF',
+    groundCol:'#6db33f',groundDark:'#4a8c28',
+    sunMoon:'☀️',sunPos:{top:'10px',right:'50%'},
+    label:'Afternoon ☀️',
+    moodText:"It's warm! Let's explore 🌞",
+    puppyState:'sit',
+    starOpacity:0,
+    nightMode:false,
+  },
+  evening:{
+    skyTop:'#FF6B35',skyBot:'#FFB347',
+    groundCol:'#4a8c28',groundDark:'#2f5a16',
+    sunMoon:'🌇',sunPos:{top:'25px',right:'30px'},
+    label:'Evening 🌇',
+    moodText:'Golden hour walk time! 🌇',
+    puppyState:'excited',
+    starOpacity:0,
+    nightMode:false,
+  },
+  night:{
+    skyTop:'#1a1a2e',skyBot:'#16213e',
+    groundCol:'#2a3d1a',groundDark:'#1a2810',
+    sunMoon:'🌙',sunPos:{top:'20px',right:'35px'},
+    label:'Goodnight 🌙',
+    moodText:'Sleepy time... 💤',
+    puppyState:'sleep',
+    starOpacity:1,
+    nightMode:true,
+  },
+};
+
+function updateTimeOfDay(){
+  const h = getHour();
+  const slot = getTimeSlot(h);
+  const td = TIME_DATA[slot];
+
+  document.documentElement.style.setProperty('--sky-top',td.skyTop);
+  document.documentElement.style.setProperty('--sky-bot',td.skyBot);
+  document.documentElement.style.setProperty('--ground',td.groundCol);
+  document.documentElement.style.setProperty('--ground-dark',td.groundDark);
+
+  const sky = document.getElementById('sky');
+  sky.style.background = `linear-gradient(to bottom,${td.skyTop},${td.skyBot})`;
+
+  const sm = document.getElementById('sun-moon');
+  sm.textContent = td.sunMoon;
+  sm.style.top = td.sunPos.top;
+  sm.style.right = td.sunPos.right||'auto';
+  if(td.sunPos.right==='50%'){sm.style.right='';sm.style.left='50%';sm.style.transform='translateX(-50%)';}
+  else{sm.style.left='';sm.style.transform='';}
+
+  const stars = document.getElementById('stars');
+  stars.style.opacity = td.starOpacity;
+  if(td.starOpacity > 0) drawStars(stars);
+
+  document.getElementById('time-label').textContent = td.label;
+
+  // puppy state (don't change if walking)
+  if(!S.walking){
+    const pc = document.getElementById('puppy');
+    pc.className = 'state-'+td.puppyState;
+    document.getElementById('puppy-mood-label').textContent = td.moodText;
   }
+
+  // night sleep: only show zzz at night
+  const zzz = document.getElementById('p-zzz');
+  const sleepSetting = S.settings.sleep;
+  if(td.nightMode && sleepSetting){
+    zzz.style.opacity = '1';
+  } else {
+    zzz.style.opacity = '0';
+  }
+
+  // theme color meta
+  document.getElementById('themeColor').content = td.skyTop;
+}
+
+function drawStars(canvas){
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const stars = [];
+  // deterministic star positions
+  let x = 42;
+  for(let i=0;i<60;i++){
+    x = (x*1103515245+12345)&0x7fffffff;
+    const sx = (x%380);
+    x = (x*1103515245+12345)&0x7fffffff;
+    const sy = (x%160);
+    x = (x*1103515245+12345)&0x7fffffff;
+    const r = 0.5+(x%10)*0.1;
+    stars.push({sx,sy,r});
+  }
+  stars.forEach(s=>{
+    ctx.beginPath();
+    ctx.arc(s.sx,s.sy,s.r,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,0.8)';
+    ctx.fill();
+  });
+}
+
+// ════════════════════════════════
+// SEASONS
+// ════════════════════════════════
+function getSeason(){
+  const m = new Date().getMonth()+1;
+  if(m>=3&&m<=5)  return {name:'Spring 🌸',type:'spring'};
+  if(m>=6&&m<=8)  return {name:'Summer ☀️',type:'summer'};
+  if(m>=9&&m<=11) return {name:'Autumn 🍂',type:'autumn'};
+  return {name:'Winter ❄️',type:'winter'};
+}
+
+function updateSeason(){
+  const season = getSeason();
+  document.getElementById('season-label').textContent = season.name;
+
+  if(!S.settings.season){
+    document.getElementById('season-deco').innerHTML='';
+    return;
+  }
+
+  const deco = document.getElementById('season-deco');
+  deco.innerHTML = '';
+
+  if(season.type==='spring'){
+    ['🌸','🌷','🌼','💐','🌺'].forEach((f,i)=>{
+      const d = document.createElement('div');
+      d.className='flower';
+      d.textContent=f;
+      d.style.left=(10+i*18)+'%';
+      d.style.animationDelay=(i*0.4)+'s';
+      d.style.bottom='0';
+      deco.appendChild(d);
+    });
+  } else if(season.type==='summer'){
+    // water bowl appears
+    const wb = document.createElement('div');
+    wb.textContent='💧';
+    wb.style.cssText='position:absolute;bottom:0;right:15%;font-size:20px';
+    deco.appendChild(wb);
+  } else if(season.type==='autumn'){
+    ['🍁','🍂','🍁','🍂','🍁'].forEach((l,i)=>{
+      const d=document.createElement('div');
+      d.className='leaf';
+      d.textContent=l;
+      d.style.left=(5+i*20)+'%';
+      d.style.animationDuration=(2+i*0.3)+'s';
+      d.style.animationDelay=(i*0.5)+'s';
+      d.style.bottom='0';
+      deco.appendChild(d);
+    });
+  } else if(season.type==='winter'){
+    for(let i=0;i<8;i++){
+      const d=document.createElement('div');
+      d.className='snowflake';
+      d.textContent='❄';
+      d.style.left=(Math.random()*90)+'%';
+      d.style.animationDuration=(1.5+Math.random())+'s';
+      d.style.animationDelay=(Math.random()*2)+'s';
+      d.style.bottom='0';
+      deco.appendChild(d);
+    }
+    // breath puff
+    const bp=document.createElement('div');
+    bp.className='breath';
+    bp.style.cssText='right:42%;bottom:20px;width:8px;height:8px';
+    deco.appendChild(bp);
+  }
+}
+
+// ════════════════════════════════
+// PUPPY ANIMATIONS & SPEECH
+// ════════════════════════════════
+function setPuppyState(state){
+  const pc = document.getElementById('puppy');
+  pc.className = 'state-'+state;
+}
+
+function puppySay(text, duration=3000){
+  const sb = document.getElementById('speech-bubble');
+  sb.textContent = text;
+  sb.classList.add('show');
+  setTimeout(()=>sb.classList.remove('show'), duration);
+}
+
+function spawnPaw(){
+  const track = document.getElementById('paw-track');
+  const p = document.createElement('div');
+  p.className='paw';
+  p.textContent='🐾';
+  p.style.right=(Math.random()*60+10)+'%';
+  p.style.bottom=(4+Math.random()*20)+'px';
+  track.appendChild(p);
+  setTimeout(()=>p.remove(), 2000);
+}
+
+// ════════════════════════════════
+// WALK
+// ════════════════════════════════
+function toggleWalk(){
+  if(S.walking){
+    endWalk();
+  } else {
+    startWalk();
+  }
+}
+
+function startWalk(){
+  S.walking = true;
+  S.walkStart = Date.now();
+  document.body.classList.add('walking');
+  document.getElementById('btn-walk-toggle').textContent = '🏠 End walk';
+  document.getElementById('btn-walk-toggle').style.background = '#E74C3C';
+  document.getElementById('walk-timer').style.display='block';
+  setPuppyState('walk');
+  document.getElementById('puppy-mood-label').textContent = "Let's go! 🐾";
+
+  // try motion sensor
+  if(window.DeviceMotionEvent){
+    if(typeof DeviceMotionEvent.requestPermission==='function'){
+      DeviceMotionEvent.requestPermission().then(r=>{
+        if(r==='granted') enableMotion();
+      }).catch(()=>{});
+    } else {
+      enableMotion();
+    }
+  }
+
+  S.walkInterval = setInterval(()=>{
+    const elapsed = Math.floor((Date.now()-S.walkStart)/1000);
+    const mm = String(Math.floor(elapsed/60)).padStart(2,'0');
+    const ss = String(elapsed%60).padStart(2,'0');
+    document.getElementById('walk-timer').textContent = mm+':'+ss;
+    document.getElementById('stat-time').textContent = Math.floor(elapsed/60);
+  }, 1000);
+
+  puppySay('Woof! Adventure time! 🐾');
+}
+
+function endWalk(){
+  S.walking = false;
+  clearInterval(S.walkInterval);
+  document.body.classList.remove('walking');
+  document.getElementById('btn-walk-toggle').textContent = '🐾 Start walk';
+  document.getElementById('btn-walk-toggle').style.background = '';
+  document.getElementById('walk-timer').style.display='none';
+  document.getElementById('stat-time').textContent = '0';
+
+  const dur = Math.floor((Date.now()-S.walkStart)/60000);
+  if(dur > 0 || S.steps > 0){
+    const walk = {
+      date: new Date().toLocaleDateString('en-GB',{weekday:'short',month:'short',day:'numeric'}),
+      dayKey: new Date().toDateString(),
+      duration: dur,
+      steps: S.steps,
+      km: +(S.distKm).toFixed(2),
+      mood: '😊',
+    };
+    S.walks.unshift(walk);
+    S.streak = calcStreak();
+    if(S.streak > S.bestStreak) S.bestStreak = S.streak;
+    S.steps = 0;
+    S.distKm = 0;
+    saveState();
+    renderHistory();
+    updateStats();
+
+    // 🐾 → 💧 drinking sequence — thirst scales with km + season + time of day
+    drinkWater(()=>{
+      openModal('modal-mood');
+    }, walk.km, dur);
+  }
+
+  disableMotion();
+  updateTimeOfDay();
+}
+
+// ════════════════════════════════
+// THIRST SYSTEM
+// ════════════════════════════════
+/*
+  Thirst score (0–10) computed from three real factors:
+    1. Walk distance  — longer walk = more thirsty (vets say ~30ml/kg/km)
+    2. Season         — summer adds heat load
+    3. Time of day    — afternoon sun is hottest
+
+  Score → behaviour:
+    0–3  (short, cool)   : light thirst  — plain water, one lap phrase
+    4–6  (moderate)      : thirsty       — drinks longer, panting first
+    7–8  (hot/long)      : very thirsty  — pants → gulps → "sooo hot"
+    9–10 (summer noon+)  : heat alert    — ICE TREAT in bowl, special phrases
+
+  Ice is safe for dogs — vets confirm frozen treats are fine enrichment;
+  the old "ice causes bloat" myth has been debunked.
+*/
+function calcThirst(walkKm, walkDur){
+  let score = 0;
+
+  // distance factor (0–4 pts): every ~1.5 km adds a point, caps at 4
+  score += Math.min(4, walkKm / 1.5);
+
+  // duration factor (0–2 pts): 30+ min walks add up to 2 pts
+  score += Math.min(2, walkDur / 30);
+
+  // season factor
+  const season = getSeason().type;
+  if(season === 'summer')  score += 2.5;
+  else if(season === 'spring' || season === 'autumn') score += 0.5;
+  // winter: 0 bonus
+
+  // time-of-day factor
+  const slot = getTimeSlot(getHour());
+  if(slot === 'afternoon') score += 1.5;   // peak heat
+  else if(slot === 'evening') score += 0.8;
+  else if(slot === 'morning' || slot === 'dawn') score += 0;
+
+  return Math.min(10, score);
+}
+
+function drinkWater(onDone, walkKm, walkDur){
+  const thirst  = calcThirst(walkKm || 0, walkDur || 0);
+  const bowl    = document.getElementById('water-bowl');
+  const canvas  = document.getElementById('puppy-canvas');
+  const badge   = document.getElementById('wb-thirst-badge');
+  const label   = document.getElementById('wb-label');
+  const season  = getSeason().type;
+  const slot    = getTimeSlot(getHour());
+
+  // decide mode
+  const isIce   = thirst >= 9;   // summer noon+ long walk → ice treat
+  const isVeryThirsty = thirst >= 7;
+  const isThirsty     = thirst >= 4;
+
+  // configure bowl appearance
+  if(isIce){
+    bowl.classList.add('ice-mode');
+    label.textContent = '🧊';
+    badge.textContent = '🌡️ Ice treat!';
+  } else if(isVeryThirsty){
+    label.textContent = '💧💧';
+    badge.textContent = thirst >= 8 ? '😮‍💨 Very thirsty!' : '😛 Thirsty!';
+  } else if(isThirsty){
+    label.textContent = '💧';
+    badge.textContent = '😛 Thirsty';
+  } else {
+    label.textContent = '💧';
+    badge.textContent = 'Good walk! 🐾';
+  }
+
+  // thirst phrases
+  const thirstPhrases = {
+    low:  ['Good walk! 💧','Just a little sip 🐾','Water please! 💧'],
+    mid:  ['So thirsty! 💧😛','Need water! 🐶','*pants* Water! 😮‍💨'],
+    high: ['*PANT PANT* Water NOW!! 😮‍💨💦','Sooo hot!! 🥵 Water!','*panting hard* pleeeease 💦'],
+    ice:  ['🧊 ICE?! Oh WOW!! 🐶🎉','*sees ice* BEST DAY EVER!! 🧊','Is that ICE?! You\'re the BEST 🧊💕'],
+  };
+  const lapPhrases = {
+    low:  ['*sip sip* 🐶','*lap* Yum 💧'],
+    mid:  ['*lap lap lap* 🐶💧','*gulps* Ahhh 💧'],
+    high: ['*GULP GULP GULP* 💦💦','*lap lap lap lap* 💦 so good'],
+    ice:  ['*crunch crunch* 🧊😍','*lick lick* 🧊 Soooo cold!!','*CRUNCH* Best. Ice. Ever. 🧊'],
+  };
+  const donePhrases = {
+    low:  ['Refreshed! 🐾','Yum! All better 🐾'],
+    mid:  ['Ahh, so refreshing! 🐾💧','Much better! 🐾😊'],
+    high: ['FINALLY!! Ahhhh 😮‍💨💧 so good!','*big sigh* That hit the spot 💦🐾'],
+    ice:  ['🧊 Best treat EVER!! 🎉🐶','That ICE was AMAZING!! 🧊🐾💕','*happy zoomies brain* 🧊🎊 LOVE YOU'],
+  };
+
+  const tier = isIce ? 'ice' : isVeryThirsty ? 'high' : isThirsty ? 'mid' : 'low';
+  const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+
+  // drinking duration scales with thirst (1.5s – 3.5s)
+  const drinkMs = 1500 + thirst * 200;
+
+  // ── SEQUENCE ──
+
+  // 1. If very thirsty, pant first before bowl appears
+  if(isVeryThirsty){
+    setPuppyState('pant');
+    puppySay(pick(thirstPhrases[tier]), 1400);
+    setTimeout(startBowl, 1200);
+  } else {
+    puppySay(pick(thirstPhrases[tier]), 1400);
+    startBowl();
+  }
+
+  function startBowl(){
+    // 2. Bowl slides in
+    bowl.classList.add('visible');
+
+    // 3. Puppy slides to bowl
+    setTimeout(()=>{
+      canvas.style.transform = '';
+      canvas.classList.add('drinking');
+
+      // 4. Drinking starts
+      setTimeout(()=>{
+        setPuppyState('drink');
+        bowl.classList.add('drinking');
+        puppySay(pick(lapPhrases[tier]), drinkMs - 200);
+
+        // 5. Done drinking
+        setTimeout(()=>{
+          setPuppyState('excited');
+          puppySay(pick(donePhrases[tier]), 2200);
+          bowl.classList.remove('drinking');
+
+          // 6. Slide back
+          canvas.classList.remove('drinking');
+          canvas.classList.add('drink-done');
+          setTimeout(()=>{
+            canvas.classList.remove('drink-done');
+            canvas.style.transform = 'translateX(-50%)';
+            bowl.classList.remove('visible','drinking','ice-mode');
+            badge.textContent = '';
+            label.textContent = '💧';
+
+            setTimeout(()=>{
+              setPuppyState('sit');
+              if(onDone) onDone();
+            }, 500);
+          }, 500);
+        }, drinkMs);
+      }, 550);
+    }, 700);
+  }
+}
+let _motionHandler = null;
+let _lastAccel = {x:0,y:0,z:0};
+let _stepCooldown = false;
+
+function enableMotion(){
+  S.motionEnabled = true;
+  _motionHandler = (e)=>{
+    if(!e.acceleration) return;
+    const a = e.acceleration;
+    const delta = Math.abs((a.x||0)-_lastAccel.x)+Math.abs((a.y||0)-_lastAccel.y)+Math.abs((a.z||0)-_lastAccel.z);
+    _lastAccel = {x:a.x||0,y:a.y||0,z:a.z||0};
+    if(delta > 8 && !_stepCooldown){
+      _stepCooldown = true;
+      addSteps(1);
+      setTimeout(()=>_stepCooldown=false, 400);
+    }
+  };
+  window.addEventListener('devicemotion', _motionHandler);
+}
+
+function disableMotion(){
+  S.motionEnabled = false;
+  if(_motionHandler) window.removeEventListener('devicemotion',_motionHandler);
+  _motionHandler = null;
+}
+
+// ════════════════════════════════
+// STEPS
+// ════════════════════════════════
+function addSteps(n){
+  S.steps += n;
+  S.totalSteps += n;
+  S.distKm += n * 0.0007; // ~0.7m per step
+  updateStats();
+  updateAdventures();
+  checkBadges();
+
+  // paw prints while walking
+  S.stepSinceLastPaw = (S.stepSinceLastPaw||0) + n;
+  if(S.stepSinceLastPaw >= 50){
+    S.stepSinceLastPaw = 0;
+    if(S.walking) spawnPaw();
+  }
+
+  // excite puppy on milestones
+  if(S.totalSteps % 1000 === 0 && S.totalSteps > 0){
+    setPuppyState('excited');
+    puppySay(`${S.totalSteps} steps! Amazing! 🎉`);
+    setTimeout(()=>setPuppyState(S.walking?'walk':'sit'), 3000);
+  }
+
+  saveState();
+}
+
+function submitHealthSteps(){
+  const inp = document.getElementById('health-steps-input');
+  const val = parseInt(inp.value);
+  if(!val||val<0){toast('Please enter a valid step count');return;}
+  addSteps(val);
+  inp.value='';
+  toast(`${val.toLocaleString()} steps given to puppy 🐾`);
+  setPuppyState('excited');
+  puppySay('Thank you! Woof! 🐾');
+  setTimeout(()=>{
+    setPuppyState('sit');
+    document.getElementById('puppy-mood-label').textContent='Feeling great!';
+  },3000);
+}
+
+function openStepEntry(){
+  const card = document.getElementById('step-entry-card');
+  card.style.display = card.style.display==='none'?'block':'none';
+  if(card.style.display==='block') card.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ════════════════════════════════
+// STATS UI
+// ════════════════════════════════
+function updateStats(){
+  document.getElementById('stat-steps').textContent = S.totalSteps.toLocaleString();
+  document.getElementById('stat-dist').textContent = S.distKm.toFixed(1);
+  document.getElementById('stat-streak').textContent = S.streak;
+  document.getElementById('total-walks').textContent = S.walks.length;
+  document.getElementById('total-km').textContent = (S.walks.reduce((a,w)=>a+(w.km||0),0)).toFixed(1);
+  document.getElementById('total-steps-all').textContent = S.totalSteps.toLocaleString();
+  document.getElementById('best-streak').textContent = S.bestStreak;
+}
+
+function calcStreak(){
+  if(!S.walks.length) return 0;
+  // Build a set of calendar day-keys (YYYY-MM-DD) walked on, from each walk's real timestamp.
+  // (We use createdAt if present; fall back to parsing the display date as "today" for old data.)
+  const dayKeys = [...new Set(S.walks.map(w => w.dayKey || new Date().toDateString()))];
+  // Sort descending (most recent first) as actual Date objects
+  const days = dayKeys.map(k=>new Date(k)).sort((a,b)=>b-a);
+  let streak = 1;
+  for(let i=0;i<days.length-1;i++){
+    const diffDays = Math.round((days[i]-days[i+1])/86400000);
+    if(diffDays === 1){ streak++; }
+    else if(diffDays === 0){ continue; } // same day, doesn't break or extend
+    else break; // gap — streak ends here
+  }
+  // If the most recent walk wasn't today or yesterday, the streak is broken (0 — no current streak)
+  const mostRecent = days[0];
+  const todayDiff = Math.round((new Date(new Date().toDateString())-mostRecent)/86400000);
+  if(todayDiff > 1) return 0;
+  return streak;
+}
+
+function renderHistory(){
+  const el = document.getElementById('walk-history');
+  if(!S.walks.length){
+    el.innerHTML='<div style="text-align:center;padding:32px;color:var(--text2)">No walks yet — let\'s go! 🐾</div>';
+    return;
+  }
+  el.innerHTML = S.walks.slice(0,20).map(w=>`
+    <div class="history-item">
+      <div class="hist-icon">${w.mood||'🐾'}</div>
+      <div class="hist-info">
+        <div class="hist-title">${w.date}</div>
+        <div class="hist-sub">${w.steps} steps · ${w.km} km</div>
+      </div>
+      <div class="hist-stat">${w.duration}min</div>
+    </div>
+  `).join('');
+}
+
+// ════════════════════════════════
+// ADVENTURES
+// ════════════════════════════════
+function updateAdventures(){
+  // Space
+  let spaceIdx = 0;
+  for(let i=0;i<SPACE_STOPS.length;i++){if(S.totalSteps>=SPACE_STOPS[i].steps)spaceIdx=i;}
+  const next = SPACE_STOPS[Math.min(spaceIdx+1,SPACE_STOPS.length-1)];
+  const cur = SPACE_STOPS[spaceIdx];
+  const spacePct = spaceIdx===SPACE_STOPS.length-1 ? 100 :
+    Math.floor(((S.totalSteps-cur.steps)/(next.steps-cur.steps))*100);
+  document.getElementById('adv-space-loc').textContent = cur.name;
+  document.getElementById('adv-space-fill').style.width = spacePct+'%';
+  document.getElementById('adv-space-steps').textContent =
+    spaceIdx===SPACE_STOPS.length-1 ? '✨ You reached the stars!' :
+    `${(next.steps-S.totalSteps).toLocaleString()} steps to ${next.name}`;
+
+  // Silk Road
+  let silkIdx = 0;
+  for(let i=0;i<SILK_ROAD.length;i++){if(S.totalSteps>=SILK_ROAD[i].steps)silkIdx=i;}
+  const silkNext = SILK_ROAD[Math.min(silkIdx+1,SILK_ROAD.length-1)];
+  const silkCur = SILK_ROAD[silkIdx];
+  const silkPct = silkIdx===SILK_ROAD.length-1 ? 100 :
+    Math.floor(((S.totalSteps-silkCur.steps)/(silkNext.steps-silkCur.steps))*100);
+  document.getElementById('adv-silk-loc').textContent = silkCur.name;
+  document.getElementById('adv-silk-fill').style.width = silkPct+'%';
+  document.getElementById('adv-silk-steps').textContent =
+    silkIdx===SILK_ROAD.length-1 ? '🏆 You reached Venice!' :
+    `${(silkNext.steps-S.totalSteps).toLocaleString()} steps to ${silkNext.name}`;
+
+  // Sea Road
+  let seaIdx = 0;
+  for(let i=0;i<SEA_ROAD.length;i++){if(S.totalSteps>=SEA_ROAD[i].steps)seaIdx=i;}
+  const seaNext = SEA_ROAD[Math.min(seaIdx+1,SEA_ROAD.length-1)];
+  const seaCur = SEA_ROAD[seaIdx];
+  const seaPct = seaIdx===SEA_ROAD.length-1 ? 100 :
+    Math.floor(((S.totalSteps-seaCur.steps)/(seaNext.steps-seaCur.steps))*100);
+  document.getElementById('adv-sea-loc').textContent = seaCur.name;
+  document.getElementById('adv-sea-fill').style.width = seaPct+'%';
+  document.getElementById('adv-sea-steps').textContent =
+    seaIdx===SEA_ROAD.length-1 ? '🏆 You reached Alexandria!' :
+    `${(seaNext.steps-S.totalSteps).toLocaleString()} steps to ${seaNext.name}`;
+
+  // Quest AP — only top up AP based on steps earned since the last sync,
+  // so spending AP in battle (questAction) isn't overwritten on the next addSteps() call
+  const earnedAp = Math.floor(S.totalSteps/100);
+  const newAp = earnedAp - (S.questState.apBaseline||0);
+  if(newAp > 0){
+    S.questState.ap += newAp;
+    S.questState.apBaseline = earnedAp;
+  }
+  document.getElementById('quest-ap').textContent = `⚡ ${S.questState.ap} AP`;
+}
+
+function switchAdv(tab, type){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  document.getElementById('adv-space').style.display = type==='space'?'block':'none';
+  document.getElementById('adv-silk').style.display  = type==='silk'?'block':'none';
+  document.getElementById('adv-sea').style.display   = type==='sea'?'block':'none';
+  document.getElementById('adv-quest').style.display = type==='quest'?'block':'none';
+}
+
+// ════════════════════════════════
+// QUEST
+// ════════════════════════════════
+function startQuest(world){
+  S.questState.active=true;
+  S.questState.world=world;
+  S.questState.puppyHp=20;
+  const enemies=ENEMIES[world];
+  S.questState.enemy=enemies[Math.floor(Math.random()*enemies.length)];
+  S.questState.enemyHp=Math.floor(8+Math.random()*12);
+  S.questState.enemyMaxHp=S.questState.enemyHp;
+  document.getElementById('quest-worlds').style.display='none';
+  document.getElementById('quest-battle').style.display='block';
+  document.getElementById('enemy-emoji').textContent=S.questState.enemy;
+  updateQuestUI();
+}
+
+function questAction(action){
+  const q=S.questState;
+  if(action==='fight'){
+    if(q.ap<2){toast('Need 2 AP to fight');return;}
+    q.ap-=2;
+    const dmg=Math.floor(2+Math.random()*4);
+    q.enemyHp=Math.max(0,q.enemyHp-dmg);
+    toast(`Attacked for ${dmg} damage! ⚔️`);
+  } else if(action==='magic'){
+    if(q.ap<4){toast('Need 4 AP for magic');return;}
+    q.ap-=4;
+    const dmg=Math.floor(5+Math.random()*8);
+    q.enemyHp=Math.max(0,q.enemyHp-dmg);
+    toast(`Magic blast! ${dmg} damage! ✨`);
+  } else if(action==='heal'){
+    if(q.ap<3){toast('Need 3 AP to heal');return;}
+    q.ap-=3;
+    q.puppyHp=Math.min(20,q.puppyHp+5);
+    toast('Healed 5 HP! 💊');
+  } else if(action==='flee'){
+    document.getElementById('quest-worlds').style.display='block';
+    document.getElementById('quest-battle').style.display='none';
+    q.active=false;
+    toast('Fled! Puppy ran away 🏃');
+    return;
+  }
+  // enemy attacks back
+  if(q.enemyHp>0){
+    const eDmg=Math.floor(1+Math.random()*3);
+    q.puppyHp=Math.max(0,q.puppyHp-eDmg);
+  }
+  updateQuestUI();
+  if(q.enemyHp<=0){
+    toast('Victory! Enemy defeated! 🎉');
+    setPuppyState('excited');
+    setTimeout(()=>{
+      document.getElementById('quest-worlds').style.display='block';
+      document.getElementById('quest-battle').style.display='none';
+      q.active=false;
+      setPuppyState('sit');
+    },2000);
+  }
+  if(q.puppyHp<=0){
+    toast('Puppy fainted... rest and try again! 😴');
+    document.getElementById('quest-worlds').style.display='block';
+    document.getElementById('quest-battle').style.display='none';
+    q.active=false;
+  }
+}
+
+function updateQuestUI(){
+  const q=S.questState;
+  document.getElementById('puppy-hp').textContent=`${q.puppyHp}/20 HP`;
+  document.getElementById('puppy-hp-fill').style.width=(q.puppyHp/20*100)+'%';
+  document.getElementById('enemy-hp').textContent=`${q.enemyHp} HP`;
+  document.getElementById('enemy-hp-fill').style.width=(q.enemyHp/(q.enemyMaxHp||1)*100)+'%';
+  document.getElementById('quest-ap').textContent=`⚡ ${q.ap} AP`;
+}
+
+// ════════════════════════════════
+// TALK TO PUPPY
+// ════════════════════════════════
+const PUPPY_RESPONSES = {
+  hi:   ['Woof woof! 🐾 So happy to see you!','*tail wags furiously* Hi!!!! 🥰','Woof!! My favourite human! 🐶'],
+  walk: ['ZOOMIES!! Let\'s go again tomorrow! 🐕💨','Great walk!! Sleep well tonight 😴','You\'re the BEST walk buddy ever! 🏅'],
+  miss: ['I miss you too! *licks face* 🥰','You\'re my favourite person 💛','*curls up close to you* 🐾'],
+  great:['YAYYY!! Let\'s celebrate with a walk! 🎉','Your energy is giving me zoomies! 🐕','That makes my tail go SO FAST 🐾'],
+  sleep:['Sleepy time... *yawn* 😴 I\'ll sleep too','Sweet dreams! I\'ll guard you 🌙','Zzz... goodnight... 💤'],
+  busy: ['I\'ll be very quiet 🤫 *sits patiently*','You got this! I\'ll wait here 🐾','*sits quietly and waits for you* 😊'],
 };
 
-// Session data — in memory only, regenerated each time
-let SESSION = {
-  puppyName: 'Puppy',
-  workerUrl: '',
-  todaySteps: 0,
-  lastSyncTime: null,
-  currentWorldId: null,
-  currentAreaId: null,
-  currentEncounters: []
-};
+function talkToPuppy(type){
+  S.talked = true;
+  closeModal('modal-talk');
+  const responses = PUPPY_RESPONSES[type];
+  const msg = responses[Math.floor(Math.random()*responses.length)];
 
-// Load session prefs from localStorage (low-stakes data — if cleared, just re-enter name/URL)
-function loadSession(){
+  if(type==='sleep'){
+    setPuppyState('sleep');
+    document.getElementById('puppy-mood-label').textContent='Sleeping... 💤';
+    document.getElementById('p-zzz').style.opacity='1';
+  } else if(type==='hi'||type==='great'||type==='walk'){
+    setPuppyState('excited');
+    document.getElementById('heart-container').style.display='block';
+    setTimeout(()=>{
+      document.getElementById('heart-container').style.display='none';
+      if(!S.walking) updateTimeOfDay();
+    },3000);
+  } else if(type==='busy'){
+    setPuppyState('sit');
+    document.getElementById('puppy-mood-label').textContent='Being quiet 🤫';
+  }
+
+  puppySay(msg, 4000);
+  checkBadges();
+  saveState();
+}
+
+// ════════════════════════════════
+// MOOD LOG
+// ════════════════════════════════
+function logMood(emoji){
+  if(S.walks.length>0){
+    S.walks[0].mood = emoji;
+    saveState();
+    renderHistory();
+  }
+  closeModal('modal-mood');
+  toast('Mood saved! '+emoji);
+  puppySay('Thanks for sharing! 🐾');
+}
+
+// ════════════════════════════════
+// BADGES
+// ════════════════════════════════
+function checkBadges(){
+  const unlocked = JSON.parse(localStorage.getItem('pw_badges')||'[]');
+  BADGES.forEach(b=>{
+    if(!unlocked.includes(b.id) && b.check()){
+      unlocked.push(b.id);
+      toast(`Badge unlocked: ${b.icon} ${b.name}!`);
+      setPuppyState('excited');
+      setTimeout(()=>setPuppyState(S.walking?'walk':'sit'),2000);
+    }
+  });
+  localStorage.setItem('pw_badges',JSON.stringify(unlocked));
+  renderBadges(unlocked);
+}
+
+function renderBadges(unlocked){
+  const grid = document.getElementById('badges-grid');
+  grid.innerHTML = BADGES.map(b=>`
+    <div class="badge ${unlocked.includes(b.id)?'':'locked'}">
+      <div class="badge-ico">${b.icon}</div>
+      <div>${b.name}</div>
+    </div>
+  `).join('');
+}
+
+// ════════════════════════════════
+// SYNC / DATA
+// ════════════════════════════════
+function showSyncOptions(){
+  const card = document.getElementById('sync-card');
+  card.style.display = card.style.display==='none'?'block':'none';
+  if(card.style.display==='block') card.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function selectSync(el, method){
+  document.querySelectorAll('.sync-option').forEach(s=>s.classList.remove('selected'));
+  el.classList.add('selected');
+  S.syncMethod = method;
+  document.getElementById('step-method-label').textContent =
+    method==='shortcuts'?'Apple Shortcuts':method==='manual'?'Manual entry':'Live motion sensor';
+  const guide = document.getElementById('shortcuts-guide');
+  guide.style.display = method==='shortcuts'?'block':'none';
+  if(method==='motion' && S.walking) enableMotion();
+  saveState();
+}
+
+function backupData(){
+  const data = {steps:S.totalSteps,distKm:S.distKm,streak:S.streak,walks:S.walks,bestStreak:S.bestStreak,puppyName:S.puppyName,settings:S.settings};
+  const str = JSON.stringify(data);
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(str).then(()=>toast('Data copied to clipboard 📋')).catch(()=>fallbackCopy(str));
+  } else fallbackCopy(str);
+}
+
+function fallbackCopy(str){
+  const ta=document.createElement('textarea');
+  ta.value=str;document.body.appendChild(ta);ta.select();
+  document.execCommand('copy');document.body.removeChild(ta);
+  toast('Data copied 📋');
+}
+
+function restoreData(){
+  const raw = prompt('Paste your saved data:');
+  if(!raw) return;
   try{
-    const s=JSON.parse(localStorage.getItem('mjSession')||'{}');
-    SESSION.puppyName=s.puppyName||'Puppy';
-    SESSION.workerUrl=s.workerUrl||'';
-    SESSION.todaySteps=s.todaySteps||0;
-    SESSION.lastSyncTime=s.lastSyncTime||null;
+    const d = JSON.parse(raw);
+    S.totalSteps = d.steps||0;
+    S.distKm = d.distKm||0;
+    S.streak = d.streak||0;
+    S.bestStreak = d.bestStreak||0;
+    S.walks = d.walks||[];
+    S.puppyName = d.puppyName||'Mochi';
+    S.settings = d.settings||S.settings;
+    saveState();
+    updateStats();
+    renderHistory();
+    toast('Data restored! 🐾');
+  } catch(e){toast('Invalid data format');}
+}
+
+// ════════════════════════════════
+// SETTINGS
+// ════════════════════════════════
+function toggleSetting(btn, key){
+  S.settings[key] = !S.settings[key];
+  btn.classList.toggle('on', S.settings[key]);
+  saveState();
+  updateTimeOfDay();
+  updateSeason();
+}
+
+function toggleReminder(){
+  S.settings.reminder = !S.settings.reminder;
+  document.getElementById('toggle-reminder').classList.toggle('on', S.settings.reminder);
+  document.getElementById('reminder-time-row').style.display = S.settings.reminder?'flex':'none';
+  document.getElementById('reminder-time-display').textContent = S.settings.reminder ? `Daily at ${S.settings.reminderTime}` : 'Off';
+  if(S.settings.reminder && 'Notification' in window){
+    Notification.requestPermission().then(p=>{
+      if(p!=='granted') toast('Enable notifications in Settings for reminders');
+    });
+  }
+  saveState();
+}
+
+function saveReminderTime(){
+  S.settings.reminderTime = document.getElementById('reminder-time-input').value;
+  document.getElementById('reminder-time-display').textContent = `Daily at ${S.settings.reminderTime}`;
+  saveState();
+}
+
+function renamePuppy(){
+  const name = prompt('What shall we call your puppy?', S.puppyName);
+  if(name&&name.trim()){
+    S.puppyName = name.trim();
+    document.getElementById('puppy-name-display').textContent = S.puppyName;
+    saveState();
+    toast('Puppy renamed to '+S.puppyName+' 🐾');
+  }
+}
+
+function resetAll(){
+  localStorage.clear();
+  S.steps=0;S.totalSteps=0;S.distKm=0;S.streak=0;S.bestStreak=0;S.walks=[];S.walkMinutes=0;
+  updateStats();renderHistory();updateAdventures();
+  toast('All data reset 🗑️');
+}
+
+// ════════════════════════════════
+// TEST MODE
+// ════════════════════════════════
+function toggleTestMode(){
+  const panel = document.getElementById('test-panel');
+  const toggle = document.getElementById('toggle-test');
+  const open = !panel.classList.contains('open');
+  panel.classList.toggle('open', open);
+  toggle.classList.toggle('on', open);
+}
+
+function forceTime(h){
+  S.forcedHour = h;
+  updateTimeOfDay();
+  toast(h===null?'Using real clock':'Time forced to '+h+':00');
+}
+
+function simulateWalk(){
+  if(!S.walking) startWalk();
+  let i=0;
+  const interval = setInterval(()=>{
+    addSteps(50);
+    i++;
+    if(i>=20){clearInterval(interval);setTimeout(endWalk,500);}
+  },200);
+}
+
+// ════════════════════════════════
+// PERSIST
+// ════════════════════════════════
+function saveState(){
+  localStorage.setItem('pw3',JSON.stringify({
+    totalSteps:S.totalSteps,
+    distKm:S.distKm,
+    streak:S.streak,
+    bestStreak:S.bestStreak,
+    walks:S.walks.slice(0,100),
+    puppyName:S.puppyName,
+    settings:S.settings,
+    syncMethod:S.syncMethod,
+    talked:S.talked,
+  }));
+}
+
+function loadState(){
+  try{
+    const d = JSON.parse(localStorage.getItem('pw3')||'{}');
+    S.totalSteps = d.totalSteps||0;
+    S.distKm = d.distKm||0;
+    S.streak = d.streak||0;
+    S.bestStreak = d.bestStreak||0;
+    S.walks = d.walks||[];
+    S.puppyName = d.puppyName||'Mochi';
+    S.settings = Object.assign({sleep:true,season:true,reminder:false,reminderTime:'08:00'}, d.settings||{});
+    S.syncMethod = d.syncMethod||'shortcuts';
+    S.talked = d.talked||false;
   }catch(e){}
 }
-function saveSession(){
-  try{localStorage.setItem('mjSession',JSON.stringify({
-    puppyName:SESSION.puppyName,
-    workerUrl:SESSION.workerUrl,
-    todaySteps:SESSION.todaySteps,
-    lastSyncTime:SESSION.lastSyncTime
-  }));}catch(e){}
-}
 
-// ── WORKER API ────────────────────────────
-async function workerGet(path){
-  const res=await fetch(SESSION.workerUrl+path);
-  if(!res.ok)throw new Error('HTTP '+res.status);
-  return res.json();
-}
-async function workerPost(path,data){
-  const res=await fetch(SESSION.workerUrl+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-  if(!res.ok)throw new Error('HTTP '+res.status);
-  return res.json();
-}
-
-// ── LOAD FROM WORKER ──────────────────────
-async function loadFromWorker(){
-  if(!SESSION.workerUrl)return false;
-  try{
-    showLoading('Loading your journey...');
-    const [jData,eData]=await Promise.all([
-      workerGet('/journal'),
-      workerGet('/explored')
-    ]);
-    MASTER.journal=jData.entries||[];
-    MASTER.notes=jData.notes||{};
-    MASTER.explored=eData||{areas:{},worlds:{}};
-    hideLoading();
-    return true;
-  }catch(e){
-    hideLoading();
-    return false;
-  }
-}
-
-// ── SAVE TO WORKER ────────────────────────
-async function saveJournalToWorker(){
-  if(!SESSION.workerUrl)return;
-  try{await workerPost('/journal',{entries:MASTER.journal,notes:MASTER.notes});}
-  catch(e){showToast('⚠️ Could not save to cloud — check connection');}
-}
-async function saveExploredToWorker(){
-  if(!SESSION.workerUrl)return;
-  try{await workerPost('/explored',MASTER.explored);}
-  catch(e){}
-}
-
-// ── DOM HELPERS ───────────────────────────
-function el(id){return document.getElementById(id);}
-function setText(id,v){const e=el(id);if(e)e.textContent=String(v);}
-function setHtml(id,v){const e=el(id);if(e)e.innerHTML=v;}
-function setStyle(id,p,v){const e=el(id);if(e)e.style[p]=v;}
-function addCls(id,c){const e=el(id);if(e)e.classList.add(c);}
-function remCls(id,c){const e=el(id);if(e)e.classList.remove(c);}
-let toastTimer=null;
-function showToast(msg){
-  const t=el('toast');if(!t)return;
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
-}
-function showLoading(txt='Loading...'){
-  setText('loadingTxt',txt);el('loadingOverlay').classList.add('show');
-}
-function hideLoading(){el('loadingOverlay').classList.remove('show');}
-function todayKey(){return new Date().toISOString().slice(0,10);}
-
-// ── SCREENS ───────────────────────────────
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  addCls(id,'active');
+// ════════════════════════════════
+// UI HELPERS
+// ════════════════════════════════
+function showPage(name, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  const map={homeScreen:'navHome',mapScreen:'navMap',journalScreen:'navJournal',settingsScreen:'navSettings'};
-  if(map[id])addCls(map[id],'active');
-  if(id==='journalScreen')renderJournal();
-  if(id==='mapScreen')resetMapToWorldView();
+  document.getElementById('page-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='stats') renderHistory();
+  if(name==='adventure') updateAdventures();
 }
 
-// ── BOTTOM NAV ────────────────────────────
-el('navHome').addEventListener('click',()=>showScreen('homeScreen'));
-el('navMap').addEventListener('click',()=>showScreen('mapScreen'));
-el('navJournal').addEventListener('click',()=>{MASTER.newCount=0;updateJournalBadge();showScreen('journalScreen');});
-el('navSettings').addEventListener('click',()=>{
-  el('setPuppyName').value=SESSION.puppyName;
-  el('setWorkerUrl').value=SESSION.workerUrl;
-  showScreen('settingsScreen');
+function openModal(id){
+  const m = document.getElementById(id);
+  m.classList.add('open');
+}
+
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+}
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._to);
+  t._to = setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ════════════════════════════════
+// INIT
+// ════════════════════════════════
+loadState();
+updateStats();
+renderHistory();
+updateAdventures();
+updateTimeOfDay();
+updateSeason();
+checkBadges();
+
+document.getElementById('puppy-name-display').textContent = S.puppyName;
+document.getElementById('step-method-label').textContent =
+  S.syncMethod==='shortcuts'?'Apple Shortcuts':S.syncMethod==='manual'?'Manual entry':'Live motion sensor';
+
+// apply saved settings to toggles
+['sleep','season'].forEach(k=>{
+  const t=document.getElementById('toggle-'+k);
+  if(t) t.classList.toggle('on',S.settings[k]);
 });
-el('mapBackBtn').addEventListener('click',()=>showScreen('homeScreen'));
-el('journeyBackBtn').addEventListener('click',()=>showScreen('mapScreen'));
-el('homeExploreBtn').addEventListener('click',()=>showScreen('mapScreen'));
+document.getElementById('toggle-reminder').classList.toggle('on',S.settings.reminder);
+if(S.settings.reminder) document.getElementById('reminder-time-row').style.display='flex';
+document.getElementById('reminder-time-display').textContent =
+  S.settings.reminder ? `Daily at ${S.settings.reminderTime}` : 'Off';
+document.getElementById('reminder-time-input').value = S.settings.reminderTime||'08:00';
 
-// ── SVG MAP INTERACTIONS ──────────────────
-function resetMapToWorldView(){
-  setStyle('areaSelectPanel','display','none');
-  setText('mapTitle','Choose a Civilization');
-  setText('mapModeBadge','👣 '+SESSION.todaySteps.toLocaleString()+' steps today');
-  // Update explored markers on SVG
-  document.querySelectorAll('.map-region').forEach(r=>{
-    const civ=r.dataset.civ;
-    const explored=MASTER.explored.worlds&&MASTER.explored.worlds[civ];
-    r.style.opacity=explored?'1':'0.7';
-    r.style.filter=explored?'brightness(1.3)':'none';
-  });
-}
+// update time every minute
+setInterval(updateTimeOfDay, 60000);
+// season doesn't need updating on interval (once per load is fine)
 
-document.getElementById('worldSvg').addEventListener('click',e=>{
-  const region=e.target.closest('.map-region');
-  if(!region)return;
-  const civId=region.dataset.civ;
-  if(!civId||!WORLDS[civId])return;
-  showAreaSelect(civId);
-});
+// Puppy random idle behaviors
+setInterval(()=>{
+  if(S.walking || document.hidden) return;
+  const h = getHour();
+  const slot = getTimeSlot(h);
+  if(slot==='night') return;
 
-// Tooltip
-document.getElementById('worldSvg').addEventListener('mousemove',e=>{
-  const region=e.target.closest('.map-region');
-  const tip=el('mapTooltip');
-  if(region&&region.dataset.civ){
-    const w=WORLDS[region.dataset.civ];
-    if(w){
-      tip.textContent=w.name+' • '+w.period;
-      tip.style.display='block';
-      const rect=el('worldSvg').getBoundingClientRect();
-      tip.style.left=Math.min(e.clientX-rect.left+10,280)+'px';
-      tip.style.top=(e.clientY-rect.top-30)+'px';
-    }
-  } else {
-    tip.style.display='none';
-  }
-});
+  const idle = ['sniff','sit','sit','sit'];
+  const r = idle[Math.floor(Math.random()*idle.length)];
+  setPuppyState(r);
 
-function showAreaSelect(civId){
-  const world=WORLDS[civId];if(!world)return;
-  SESSION.currentWorldId=civId;
-  setText('mapTitle',world.name);
-  const panel=el('areaSelectPanel');
-  panel.style.display='block';
-  setText('areaSelectTitle',world.icon+' '+world.name);
-  setText('areaSelectSub',world.period+' — Choose an area to explore');
-  const grid=el('areaGrid');grid.innerHTML='';
-  world.areas.forEach(area=>{
-    const expKey=civId+'_'+area.id;
-    const expData=MASTER.explored.areas&&MASTER.explored.areas[expKey];
-    const btn=document.createElement('button');
-    btn.className='area-btn'+(expData?' explored-area':'');
-    btn.innerHTML=`
-      <div class="area-btn-icon">${area.icon}</div>
-      <div class="area-btn-name">${area.name}</div>
-      <div class="area-btn-sub">${area.desc}</div>
-      ${expData?`<div class="area-btn-visited">✅ Visited ${expData.visitCount}x</div>`:'<div class="area-btn-sub">Not yet explored</div>'}
-    `;
-    btn.addEventListener('click',()=>startJourney(civId,area.id));
-    grid.appendChild(btn);
-  });
-  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
-}
+  const idleSayings = [
+    'Wanna go for a walk? 🐾',
+    '*sniffs the air* 🐽',
+    'I see a squirrel!! 🐿️',
+    '*yawns and stretches* 🐶',
+    'Walkies? Please? 🥺',
+  ];
+  if(Math.random()>0.5) puppySay(idleSayings[Math.floor(Math.random()*idleSayings.length)]);
 
-// ── START JOURNEY ─────────────────────────
-function startJourney(worldId,areaId){
-  SESSION.currentWorldId=worldId;
-  SESSION.currentAreaId=areaId;
-  const world=WORLDS[worldId];
-  const area=world.areas.find(a=>a.id===areaId);
-  if(!world||!area)return;
+  setTimeout(()=>{
+    if(!S.walking) setPuppyState('sit');
+  }, 5000);
+}, 20000);
 
-  // Mark as explored
-  if(!MASTER.explored.areas)MASTER.explored.areas={};
-  if(!MASTER.explored.worlds)MASTER.explored.worlds={};
-  const expKey=worldId+'_'+areaId;
-  const existing=MASTER.explored.areas[expKey];
-  MASTER.explored.areas[expKey]={
-    visitCount:(existing?.visitCount||0)+1,
-    firstDate:existing?.firstDate||todayKey(),
-    lastDate:todayKey()
-  };
-  MASTER.explored.worlds[worldId]={lastVisit:todayKey()};
-  saveExploredToWorker();
-
-  // Generate encounters for this area + step count
-  const encounters=generateEncounters(worldId,areaId,SESSION.todaySteps);
-  SESSION.currentEncounters=encounters;
-
-  // Render journey screen
-  const w=world;
-  const banner=el('journeyBanner');
-  banner.style.background=`linear-gradient(135deg,${w.color}22,${w.color}11)`;
-  banner.style.borderColor=w.color+'55';
-  setHtml('journeyBanner',`
-    <div class="jwb-top">
-      <div class="jwb-icon">${w.icon}</div>
-      <div class="jwb-info">
-        <div class="jwb-world" style="color:${w.color}">${w.name}</div>
-        <div class="jwb-area">${area.icon} ${area.name} — ${area.desc}</div>
-        <div class="jwb-period">${w.period}</div>
-      </div>
-    </div>
-    <div class="jwb-steps">👣 ${SESSION.todaySteps.toLocaleString()} steps today → ${encounters.length} encounter${encounters.length!==1?'s':''} unlocked</div>
-  `);
-  setText('journeyTitle',area.name);
-
-  renderEncounters(encounters);
-  showScreen('journeyScreen');
-  updateHomeStats();
-}
-
-function generateEncounters(worldId,areaId,steps){
-  if(steps<=0){
-    // Even with 0 steps, show at least 1 encounter (for test/demo)
-    const pool=ENCOUNTERS.filter(e=>e.world===worldId&&e.area===areaId);
-    const fallback=pool.length?pool:ENCOUNTERS.filter(e=>e.world===worldId);
-    return fallback.length?[{enc:fallback[0],stepAt:0,rare:false}]:[];
-  }
-  const results=[];
-  let step=500;
-  const pool=ENCOUNTERS.filter(e=>e.world===worldId&&e.area===areaId);
-  const worldPool=ENCOUNTERS.filter(e=>e.world===worldId);
-  const anyPool=ENCOUNTERS;
-  const used=new Set();
-  while(step<=Math.max(steps,500)){
-    const isRare=step>0&&step%2000===0;
-    const src=pool.length?pool:worldPool.length?worldPool:anyPool;
-    const available=src.filter(e=>!used.has(e.id));
-    const pick=available.length?available:src;
-    const enc=pick[Math.floor(Math.random()*pick.length)];
-    used.add(enc.id);
-    results.push({enc,stepAt:step,rare:isRare});
-    step+=isRare?2000:500;
-    if(step>steps&&results.length>0)break;
-  }
-  return results;
-}
-
-// ── RENDER ENCOUNTERS ─────────────────────
-function renderEncounters(encounters){
-  const list=el('encList');list.innerHTML='';
-  if(!encounters.length){
-    list.innerHTML=`<div class="no-enc"><div class="no-enc-ico">🐾</div><div style="font-size:14px;">Sync some steps to unlock encounters!</div><div style="font-size:12px;margin-top:6px;color:#4a3a2a;">Or use Test Mode in Settings.</div></div>`;
-    return;
-  }
-  [...encounters].reverse().forEach(({enc,stepAt,rare})=>{
-    const card=document.createElement('div');
-    card.className='enc-card'+(rare?' rare':'');
-    card.innerHTML=`
-      <div class="enc-top">
-        <div class="enc-char-emo">${enc.charEmoji}</div>
-        <div class="enc-char-name">${enc.char}</div>
-        ${rare?'<span class="enc-rare-tag">✨ Rare</span>':`<span class="enc-step-tag">👣 ${stepAt.toLocaleString()}</span>`}
-      </div>
-      <div class="enc-body">
-        <div class="enc-title">${enc.title}</div>
-        ${buildAha(enc)}
-        ${buildStory(enc)}
-        ${buildConv(enc)}
-        <div class="enc-actions">
-          <button class="enc-act-btn detail-btn" data-id="${enc.id}">📖 Full story</button>
-          <button class="enc-act-btn save-btn" data-id="${enc.id}">📚 Save to Journal</button>
-        </div>
-      </div>`;
-    list.appendChild(card);
-    wireCard(card,enc,stepAt,rare);
-  });
-}
-
-function buildAha(enc){
-  return `<div class="style-block">
-    <div class="style-label">💡 AHA! Fact</div>
-    <div class="aha-teaser">${enc.aha.teaser}</div>
-    <div class="aha-fact">${enc.aha.fact}</div>
-    <button class="reveal-btn" data-reveal="${enc.id}">+ Read more</button>
-    <div class="aha-more" id="more_${enc.id}">${enc.aha.more}</div>
-  </div>`;
-}
-function buildStory(enc){
-  return `<div class="style-block">
-    <div class="style-label">📖 Story Scene</div>
-    <div class="story-scene">"${enc.story.scene}"</div>
-    <div class="story-fact">📌 ${enc.story.fact}</div>
-  </div>`;
-}
-function buildConv(enc){
-  const choices=enc.conv.choices.map((c,i)=>`<button class="conv-choice" data-enc="${enc.id}" data-i="${i}">${c}</button>`).join('');
-  const resps=enc.conv.responses.map((r,i)=>`<div class="conv-resp" id="resp_${enc.id}_${i}">${enc.charEmoji} "${r}"</div>`).join('');
-  return `<div>
-    <div class="style-label">💬 Conversation</div>
-    <div class="conv-speech">${enc.charEmoji} "${enc.conv.speech}"</div>
-    <div class="conv-choices" id="choices_${enc.id}">${choices}</div>
-    ${resps}
-  </div>`;
-}
-
-function wireCard(card,enc,stepAt,rare){
-  card.querySelectorAll('[data-reveal]').forEach(b=>{
-    b.addEventListener('click',()=>{
-      const m=document.getElementById('more_'+enc.id);
-      if(m){m.style.display='block';b.style.display='none';}
-    });
-  });
-  card.querySelectorAll('.conv-choice').forEach(b=>{
-    b.addEventListener('click',()=>{
-      const idx=parseInt(b.dataset.i);
-      document.getElementById('choices_'+enc.id).style.display='none';
-      const r=document.getElementById(`resp_${enc.id}_${idx}`);
-      if(r)r.style.display='block';
-    });
-  });
-  card.querySelectorAll('.detail-btn').forEach(b=>{
-    b.addEventListener('click',()=>openDetail(enc.id));
-  });
-  card.querySelectorAll('.save-btn').forEach(b=>{
-    b.addEventListener('click',()=>{
-      saveToJournal(enc,stepAt,rare);
-      b.textContent='✅ Saved';
-      b.classList.add('saved');
-      b.disabled=true;
-    });
-  });
-}
-
-// ── JOURNAL SAVE ─────────────────────────
-function saveToJournal(enc,stepAt,rare){
-  const already=MASTER.journal.find(j=>j.encId===enc.id&&j.date===todayKey());
-  if(already){showToast('Already saved!');return;}
-  MASTER.journal.unshift({
-    encId:enc.id,date:todayKey(),
-    worldId:SESSION.currentWorldId,
-    areaId:SESSION.currentAreaId,
-    stepAt,rare,
-    char:enc.char,charEmoji:enc.charEmoji,
-    title:enc.title,teaser:enc.aha.teaser
-  });
-  if(!MASTER.newCount)MASTER.newCount=0;
-  MASTER.newCount++;
-  updateJournalBadge();
-  saveJournalToWorker();
-  showToast('📚 Saved to Journal!');
-  updateHomeStats();
-}
-
-function updateJournalBadge(){
-  const b=el('journalBadge');if(!b)return;
-  const count=MASTER.newCount||0;
-  if(count>0){b.textContent=count;b.style.display='block';}
-  else b.style.display='none';
-}
-
-// ── DETAIL MODAL ──────────────────────────
-let currentDetailId=null;
-function openDetail(encId){
-  const enc=ENCOUNTERS.find(e=>e.id===encId);if(!enc)return;
-  currentDetailId=encId;
-  const world=WORLDS[enc.world];
-  setText('detailChar',enc.charEmoji);
-  setText('detailWorldLabel',(world?.name||'')+' • '+(world?.period||''));
-  setText('detailTitle',enc.title);
-  setHtml('detailBody',enc.detail);
-  renderFN(encId);
-  addCls('detailModal','open');
-}
-el('detailBackBtn').addEventListener('click',()=>{remCls('detailModal','open');currentDetailId=null;});
-function renderFN(encId){
-  const note=MASTER.notes[encId]||{stars:0,text:''};
-  setHtml('fnStars',[1,2,3,4,5].map(n=>`<span class="fn-star${n<=note.stars?' on':''}" data-s="${n}">★</span>`).join(''));
-  el('fnText').value=note.text||'';
-  setText('fnSavedMsg','');
-  document.querySelectorAll('.fn-star').forEach(s=>{
-    s.addEventListener('click',()=>{
-      const n=parseInt(s.dataset.s);
-      const cur=MASTER.notes[encId]||{stars:0,text:''};
-      cur.stars=cur.stars===n?0:n;
-      MASTER.notes[encId]=cur;
-      saveJournalToWorker();
-      renderFN(encId);
-    });
-  });
-}
-el('fnSaveBtn').addEventListener('click',()=>{
-  if(!currentDetailId)return;
-  const txt=el('fnText').value;
-  const cur=MASTER.notes[currentDetailId]||{stars:0,text:''};
-  cur.text=txt;MASTER.notes[currentDetailId]=cur;
-  saveJournalToWorker();
-  setText('fnSavedMsg','✅ Saved');
-  setTimeout(()=>setText('fnSavedMsg',''),2000);
-});
-
-// ── JOURNAL SCREEN ────────────────────────
-let journalFilter='all';
-function renderJournal(){
-  setText('journalSub',`${MASTER.journal.length} encounters saved`);
-  const filters=[{k:'all',l:'All'},{k:'rare',l:'✨ Rare'},{k:'today',l:'Today'}];
-  const fEl=el('journalFilters');
-  if(fEl){
-    fEl.innerHTML=filters.map(f=>`<button class="jfbtn${journalFilter===f.k?' on':''}" data-f="${f.k}">${f.l}</button>`).join('');
-    fEl.querySelectorAll('.jfbtn').forEach(b=>b.addEventListener('click',()=>{journalFilter=b.dataset.f;renderJournal();}));
-  }
-  const list=el('journalList');if(!list)return;
-  const filtered=MASTER.journal.filter(j=>{
-    if(journalFilter==='rare')return j.rare;
-    if(journalFilter==='today')return j.date===todayKey();
-    return true;
-  });
-  if(!filtered.length){
-    list.innerHTML=`<div class="journal-empty"><div style="font-size:40px;margin-bottom:10px;">📚</div><div style="color:#6a5a3a;">No entries yet — explore and save encounters!</div></div>`;
-    return;
-  }
-  list.innerHTML='';
-  filtered.forEach(j=>{
-    const note=MASTER.notes[j.encId];
-    const world=WORLDS[j.worldId];
-    const area=world?.areas.find(a=>a.id===j.areaId);
-    const card=document.createElement('div');
-    card.className=`jcard${j.rare?' rare':''}`;
-    card.innerHTML=`
-      <div class="jcard-top">
-        <div class="jcard-icon">${j.charEmoji}</div>
-        <div class="jcard-meta">
-          <div class="jcard-char">${j.char}</div>
-          <div class="jcard-world">${world?.name||''} ${area?'• '+area.name:''}</div>
-        </div>
-        <div class="jcard-date">${j.date}</div>
-      </div>
-      <div class="jcard-title">${j.title}</div>
-      <div class="jcard-teaser">${j.teaser}</div>
-      ${note&&note.stars>0?`<div class="jcard-note">${'★'.repeat(note.stars)}${note.text?' 📓':''}</div>`:''}
-    `;
-    card.addEventListener('click',()=>openDetail(j.encId));
-    list.appendChild(card);
-  });
-}
-
-// ── HOME ──────────────────────────────────
-function updateHomeDisplay(){
-  setText('homePuppyName',SESSION.puppyName);
-  const worldCount=Object.keys(MASTER.explored.worlds||{}).length;
-  const areaCount=Object.keys(MASTER.explored.areas||{}).length;
-  setText('hstatWorlds',worldCount);
-  setText('hstatAreas',areaCount);
-  setText('hstatJournal',MASTER.journal.length);
-  if(SESSION.todaySteps>0){
-    setText('homeTodaySteps',SESSION.todaySteps.toLocaleString());
-  } else {
-    setText('homeTodaySteps','—');
-  }
-  if(SESSION.lastSyncTime){
-    const mins=Math.floor((Date.now()-SESSION.lastSyncTime)/60000);
-    let txt;
-    if(mins<1)txt='just now';
-    else if(mins<60)txt=mins+' min ago';
-    else if(mins<1440)txt=Math.floor(mins/60)+'h ago';
-    else txt=Math.floor(mins/1440)+'d ago';
-    setText('homeSyncStatus','Last synced: '+txt);
-  } else {
-    setText('homeSyncStatus','Never synced — tap Sync or use Test Mode in Settings');
-  }
-  if(!SESSION.workerUrl){
-    setStyle('setupNote','display','block');
-  } else {
-    setStyle('setupNote','display','none');
-  }
-  // Puppy status based on exploration
-  const totalVisits=Object.values(MASTER.explored.areas||{}).reduce((t,a)=>t+(a.visitCount||0),0);
-  let status='Ready for adventure';
-  if(totalVisits>=20)status='Legendary explorer! 🌟';
-  else if(totalVisits>=10)status='Seasoned adventurer!';
-  else if(totalVisits>=5)status='Growing bolder...';
-  else if(totalVisits>=1)status='Adventure has begun!';
-  setText('homePuppyStatus',status);
-}
-function updateHomeStats(){updateHomeDisplay();}
-
-// ── SYNC ──────────────────────────────────
-el('homeSyncBtn').addEventListener('click',doSync);
-async function doSync(){
-  if(!SESSION.workerUrl){showToast('⚙️ Add your Worker URL in Settings first');return;}
-  el('homeSyncBtn').textContent='⏳...';
-  el('homeSyncBtn').disabled=true;
-  try{
-    const data=await workerGet('/latest');
-    SESSION.todaySteps=data.steps||0;
-    SESSION.lastSyncTime=Date.now();
-    saveSession();
-    updateHomeDisplay();
-    showToast(`🐾 Synced! ${SESSION.todaySteps.toLocaleString()} steps today`);
-  }catch(e){
-    showToast('❌ Sync failed — check Worker URL in Settings');
-  }
-  el('homeSyncBtn').textContent='🔄 Sync Steps';
-  el('homeSyncBtn').disabled=false;
-}
-
-// ── SETTINGS ──────────────────────────────
-el('saveSettingsBtn').addEventListener('click',()=>{
-  SESSION.puppyName=el('setPuppyName').value.trim()||'Puppy';
-  SESSION.workerUrl=el('setWorkerUrl').value.trim().replace(/\/$/,'');
-  saveSession();updateHomeDisplay();
-  showToast('✅ Settings saved!');
-  if(SESSION.workerUrl)loadFromWorker().then(ok=>{
-    if(ok){showToast('☁️ Loaded data from Worker!');updateHomeDisplay();updateJournalBadge();}
-  });
-});
-el('testConnectionBtn').addEventListener('click',async()=>{
-  const url=el('setWorkerUrl').value.trim().replace(/\/$/,'');
-  if(!url){showToast('Enter a Worker URL first');return;}
-  const s=el('connectionStatus');
-  s.style.display='block';s.className='sync-indicator loading';s.textContent='⏳ Testing connection...';
-  try{
-    const res=await fetch(url+'/latest');
-    if(res.ok){s.className='sync-indicator ok';s.textContent='✅ Connected! Worker is working.';}
-    else{s.className='sync-indicator err';s.textContent='❌ Worker responded with error '+res.status;}
-  }catch(e){
-    s.className='sync-indicator err';s.textContent='❌ Could not reach Worker — check URL';
-  }
-});
-el('test1k').addEventListener('click',()=>simulateSteps(1000));
-el('test5k').addEventListener('click',()=>simulateSteps(5000));
-function simulateSteps(n){
-  SESSION.todaySteps=n;SESSION.lastSyncTime=Date.now();
-  saveSession();updateHomeDisplay();
-  showToast('🧪 Simulated '+n.toLocaleString()+' steps — now go explore the map!');
-  showScreen('mapScreen');
-}
-el('exportBtn').addEventListener('click',exportJournal);
-el('resetBtn').addEventListener('click',()=>{
-  if(confirm('🗑️ Reset ALL data including cloud storage? This cannot be undone.')){
-    MASTER={journal:[],notes:{},explored:{areas:{},worlds:{}}};
-    SESSION.todaySteps=0;SESSION.lastSyncTime=null;
-    saveSession();
-    if(SESSION.workerUrl){
-      Promise.all([
-        workerPost('/journal',{entries:[],notes:{}}),
-        workerPost('/explored',{areas:{},worlds:{}})
-      ]).catch(()=>{});
-    }
-    updateHomeDisplay();
-    showToast('🗑️ All data reset');
-    showScreen('homeScreen');
-  }
-});
-el('setupLink').addEventListener('click',()=>showScreen('settingsScreen'));
-
-// ── EXPORT ────────────────────────────────
-function exportJournal(){
-  if(!MASTER.journal.length){showToast('No entries to export yet!');return;}
-  let txt=`${SESSION.puppyName}'S MYTHICAL JOURNEY — JOURNAL\nExported: ${new Date().toLocaleDateString()}\n${'='.repeat(50)}\n\n`;
-  MASTER.journal.forEach(j=>{
-    const enc=ENCOUNTERS.find(e=>e.id===j.encId);
-    const note=MASTER.notes[j.encId];
-    const world=WORLDS[j.worldId];
-    const area=world?.areas.find(a=>a.id===j.areaId);
-    txt+=`📅 ${j.date} ${j.rare?'✨ RARE':''}\n`;
-    txt+=`${j.charEmoji} ${j.char} — ${world?.name||''} ${area?'/ '+area.name:''}\n`;
-    txt+=`${j.title}\n${j.teaser}\n`;
-    if(enc)txt+=`\nFact: ${enc.aha.fact}\n`;
-    if(note?.stars>0)txt+=`My Rating: ${'★'.repeat(note.stars)}\n`;
-    if(note?.text)txt+=`My Note: ${note.text}\n`;
-    txt+=`\n${'-'.repeat(50)}\n\n`;
-  });
-  const blob=new Blob([txt],{type:'text/plain'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download=`${SESSION.puppyName}-journey.txt`;
-  document.body.appendChild(a);a.click();
-  document.body.removeChild(a);URL.revokeObjectURL(url);
-  showToast('📥 Exported!');
-}
-
-// ── INIT ──────────────────────────────────
-loadSession();
-updateHomeDisplay();
-if(SESSION.workerUrl){
-  loadFromWorker().then(ok=>{
-    if(ok){updateHomeDisplay();updateJournalBadge();}
-    else{showToast('⚠️ Could not load cloud data — check connection');}
-  });
-}
-
-})();
+console.log('🐾 Puppy Walk v3 — Time-aware, season-aware, privacy-first!');
 </script>
-</div>
 </body>
 </html>
